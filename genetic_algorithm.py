@@ -176,3 +176,28 @@ class Neuron():
         self.output_id = output_id
         self.output_type = output_type
         self.differ_neuron = differ_neuron
+        
+# brain generator
+
+def mid_neuron(brain, edges):
+    for key in brain:
+        for pair in edges:
+            item = edges[pair]
+            if key == item[1] and 'mid' in item[0] and key != item[0]:
+                brain[key].update({item[0]: {'w':item[2]}})
+                mid_neuron(brain[key], edges)
+#                 print(key,item[0],item[2])
+            elif key == item[1] and 'mid' in item[0] and key == item[0]:
+                brain[key].update({item[0]:{'w':item[2]}})
+#                 print(key,item[0],item[2])
+            elif key == item[1] and 'mid' not in item[0]:
+                brain[key].update({item[0]:{'w':item[2]}})
+#                 print(key,item[0],item[2])
+
+def analyze_brain(brain):
+    for k, v in brain.items():
+        if isinstance(v, dict) and len(v) >= 2:
+            print('if', k, v)
+#             analyze_brain(brain)
+        else:
+            print('else', k, v)
