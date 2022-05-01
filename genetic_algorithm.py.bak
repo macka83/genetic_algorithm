@@ -63,6 +63,9 @@ def distant_obstacle_y_coord(obj_loc_y, obj_list):
 
 # przykład jak zastosować neurony executeActions.cpp
 
+# In[ ]:
+
+
 def move_x(weight):
     weight_abs = abs(weight)
     x = np.random.choice(2, 1, p=[1-weight_abs, weight_abs])
@@ -84,6 +87,9 @@ def random_move():
 
 
 # decode hexadecimal
+
+# In[ ]:
+
 
 def split_genome(hexval):
     binary = bin(int(hexval, 16))[2:]
