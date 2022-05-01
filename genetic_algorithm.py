@@ -179,7 +179,31 @@ class Neuron():
         
 # brain generator
 
-def mid_neuron(brain, edges):
+
+
+def sum_duplicated_neurons(res):
+    '''sum duplicatd neurons and return bunch neurons dictionary'''
+    dic = {}
+    for nr in res:
+        dic[nr] = {}
+        for i in res[nr]:
+            total = dic.get(i.differ_neuron, 0) + i.weight
+            n_output = f'{i.output_id}{i.output_type}'
+            n_input = f'{i.input_id}{i.input_type}'
+            dic[nr][i.differ_neuron] = [n_input, n_output, total]
+    return dic
+
+def generate_brain_output_dictionary(edges):
+    '''generate list of outputs dictionary to store 'mid' and 'in' neurons'''
+    brain_output_template = {}
+    for i in edges:
+        if 'out' in edges[i][1]:
+            brain_output_template.update({edges[i][1]:{}})
+    return brain_output_template
+
+def mid_neuron(edges):
+
+    brain_output_template = generate_brain_output_dictionary(edges)
     for key in brain:
         for pair in edges:
             item = edges[pair]
