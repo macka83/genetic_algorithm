@@ -201,22 +201,18 @@ def generate_brain_output_dictionary(edges):
             brain_output_template.update({edges[i][1]:{}})
     return brain_output_template
 
-def mid_neuron(edges):
-
-    brain = generate_brain_output_dictionary(edges)
+def mid_neuron(brain, edges):
     for key in brain:
-        for pair in edges:
-            item = edges[pair]
-            if key == item[1] and 'mid' in item[0] and key != item[0]:
-                brain[key].update({item[0]: {'w':item[2]}})
-                mid_neuron(brain[key], edges)
-#                 print(key,item[0],item[2])
-            elif key == item[1] and 'mid' in item[0] and key == item[0]:
-                brain[key].update({item[0]:{'w':item[2]}})
-#                 print(key,item[0],item[2])
-            elif key == item[1] and 'mid' not in item[0]:
-                brain[key].update({item[0]:{'w':item[2]}})
-#                 print(key,item[0],item[2])
+        if 'out' in key:
+            for pair in edges:
+                item = edges[pair]
+                if key == item[1] and 'mid' in item[0] and key != item[0]:
+                    brain[key].update({item[0]: {'w':item[2]}})
+                    mid_neuron(brain[key], edges)
+                elif key == item[1] and 'mid' in item[0] and key == item[0]:
+                    brain[key].update({item[0]:{'w':item[2]}})
+                elif key == item[1] and 'mid' not in item[0]:
+                    brain[key].update({item[0]:{'w':item[2]}})
 
 def analyze_brain(brain):
     for k, v in brain.items():
