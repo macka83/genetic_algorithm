@@ -203,7 +203,7 @@ def generate_brain_output_dictionary(edges):
 
 def mid_neuron(edges):
 
-    brain_output_template = generate_brain_output_dictionary(edges)
+    brain = generate_brain_output_dictionary(edges)
     for key in brain:
         for pair in edges:
             item = edges[pair]

@@ -201,7 +201,7 @@ def generate_brain_output_dictionary(edges):
             brain_output_template.update({edges[i][1]:{}})
     return brain_output_template
 
-def mid_neuron(edges, edges):
+def mid_neuron(edges):
 
     brain_output_template = generate_brain_output_dictionary(edges)
     for key in brain:
