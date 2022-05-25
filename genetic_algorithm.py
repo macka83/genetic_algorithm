@@ -234,3 +234,51 @@ def analyze_brain(brain):
 #             analyze_brain(brain)
         else:
             print('else', k, v)
+            
+# calculate weight sum
+
+def mid_to_weight(dic):
+    '''weight for clear input ie. no nested weights: 0mid:{0in, 1in} or 0mid:{0mid, 0in}'''
+    for key in dic:
+        if 'mid' in key and isinstance(dic[key], dict):
+            if set(i[:2] for i in dic[key]) == set(['in']):
+                dic[key] = np.tanh(sum(dic[key].values()))
+                mid_to_weight(dic)
+                
+            elif key in dic[key].keys() and Counter(i[:2] for i in dic[key])['mi'] == 1:
+                dic[key] = np.tanh(sum(dic[key].values()))
+                mid_to_weight(dic)
+                
+def out_to_weight(dic):
+    '''weight for nested input ie.  0mid:{1mid} or out:{0mid, 0in}'''
+    for key in dic:
+        if 'mid' in key and isinstance(dic[key], dict):
+            for sub_key in dic[key]:
+                if 'mid' in sub_key and sub_key != key:
+                    dic[key][sub_key] += dic[sub_key]
+
+            dic[key] = np.tanh(sum(dic[key].values()))
+            out_to_weight(dic)
+                
+        elif 'out' in key and isinstance(dic[key], dict):
+            for sub_key in dic[key]:
+                if 'mid' in sub_key:
+                    dic[key][sub_key] += dic[sub_key]
+            dic[key] = np.tanh(sum(dic[key].values()))
+            out_to_weight(dic)
+
+## preprocessing            
+def weight_sum_preprocessing(edges):
+    '''"out" and "mid" neurons to key. Values are predecessors neurons ie. "in" or "mid"'''
+    d = {}
+    for item in edges:
+        if item[1] in d:
+            d[item[1]].update({item[0]:item[2]})
+        else:
+            d[item[1]] = {item[0]:item[2]}
+
+    dic = {}
+    for i in sorted(d):
+        dic[i] = d[i]
+    
+    return dic
