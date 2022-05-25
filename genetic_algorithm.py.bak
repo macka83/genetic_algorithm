@@ -193,6 +193,19 @@ def sum_duplicated_neurons(res):
             dic[nr][i.differ_neuron] = [n_input, n_output, total]
     return dic
 
+def remove_self_loop(dic):
+    '''remove neurons if self looped ie: Amid->Bmid, Bmid->Amid'''
+    for nr in dic:
+        list_of_dup = []
+        for key_1 in dic[nr]:
+            for key_2 in dic[nr]:
+                if key_1 != key_2 and sorted(key_1) == sorted(key_2):
+                    list_of_dup.append(key_1)
+
+        for dup in list_of_dup:
+            del dic[nr][dup]
+    return dic
+
 def generate_brain_output_dictionary(edges):
     '''generate list of outputs dictionary to store 'mid' and 'in' neurons'''
     brain_output_template = {}
@@ -201,23 +214,18 @@ def generate_brain_output_dictionary(edges):
             brain_output_template.update({edges[i][1]:{}})
     return brain_output_template
 
-# def mid_neuron(brain, edges):
-
-
-    # for key in brain:
-        # for pair in edges:
-            # item = edges[pair]
-            
-            # if key == item[1] and 'mid' in item[0] and key != item[0]:
-                # brain[key].update({item[0]: {'w':item[2]}})
-                # mid_neuron(brain[key], edges)
-                # #print(key,item[0],item[2])
-            # elif key == item[1] and 'mid' in item[0] and key == item[0]:
-                # brain[key].update({item[0]:{'w':item[2]}})
-                # #print(key,item[0],item[2])
-            # elif key == item[1] and 'mid' not in item[0]:
-                # brain[key].update({item[0]:{'w':item[2]}})
-                # #print(key,item[0],item[2])
+def mid_neuron(brain, edges):
+    for key in brain:
+        if 'out' in key:
+            for pair in edges:
+                item = edges[pair]
+                if key == item[1] and 'mid' in item[0] and key != item[0]:
+                    brain[key].update({item[0]: {'w':item[2]}})
+                    mid_neuron(brain[key], edges)
+                elif key == item[1] and 'mid' in item[0] and key == item[0]:
+                    brain[key].update({item[0]:{'w':item[2]}})
+                elif key == item[1] and 'mid' not in item[0]:
+                    brain[key].update({item[0]:{'w':item[2]}})
 
 def analyze_brain(brain):
     for k, v in brain.items():
@@ -226,3 +234,51 @@ def analyze_brain(brain):
 #             analyze_brain(brain)
         else:
             print('else', k, v)
+            
+# calculate weight sum
+
+def mid_to_weight(dic):
+    '''weight for clear input ie. no nested weights: 0mid:{0in, 1in} or 0mid:{0mid, 0in}'''
+    for key in dic:
+        if 'mid' in key and isinstance(dic[key], dict):
+            if set(i[:2] for i in dic[key]) == set(['in']):
+                dic[key] = np.tanh(sum(dic[key].values()))
+                mid_to_weight(dic)
+                
+            elif key in dic[key].keys() and Counter(i[:2] for i in dic[key])['mi'] == 1:
+                dic[key] = np.tanh(sum(dic[key].values()))
+                mid_to_weight(dic)
+                
+def out_to_weight(dic):
+    '''weight for nested input ie.  0mid:{1mid} or out:{0mid, 0in}'''
+    for key in dic:
+        if 'mid' in key and isinstance(dic[key], dict):
+            for sub_key in dic[key]:
+                if 'mid' in sub_key and sub_key != key:
+                    dic[key][sub_key] += dic[sub_key]
+
+            dic[key] = np.tanh(sum(dic[key].values()))
+            out_to_weight(dic)
+                
+        elif 'out' in key and isinstance(dic[key], dict):
+            for sub_key in dic[key]:
+                if 'mid' in sub_key:
+                    dic[key][sub_key] += dic[sub_key]
+            dic[key] = np.tanh(sum(dic[key].values()))
+            out_to_weight(dic)
+
+## preprocessing            
+def weight_sum_preprocessing(edges):
+    '''"out" and "mid" neurons to key. Values are predecessors neurons ie. "in" or "mid"'''
+    d = {}
+    for item in edges:
+        if item[1] in d:
+            d[item[1]].update({item[0]:item[2]})
+        else:
+            d[item[1]] = {item[0]:item[2]}
+
+    dic = {}
+    for i in sorted(d):
+        dic[i] = d[i]
+    
+    return dic

@@ -124,25 +124,20 @@ def get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions):
     
     return input_id, input_type, weight, output_id, output_type, differ_neuron
 
-def sum_weights_from_duplicated_neurons(gene_translated, l):
-#     print('l', l.differ_neuron)
-    if gene_translated:
-        for neuron in gene_translated:
-            
-            if neuron.differ_neuron == l.differ_neuron:
-#                 print('==', neuron.differ_neuron, l.differ_neuron)
-                neuron.weight = neuron.weight + l.weight
-
-            else:
-#                 print('!=', neuron.differ_neuron, l.differ_neuron)
-                gene_translated.append(l)
+# def sum_weights_from_duplicated_neurons(gene_translated, l):
+    # if gene_translated:
+        # for neuron in gene_translated:
+            # if neuron.differ_neuron == l.differ_neuron:
+                # neuron.weight = neuron.weight + l.weight
+            # else:
+                # gene_translated.append(l)
 
     else:
         gene_translated.append(l)
     print('final', [i.differ_neuron for i in gene_translated])
 
 def generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner):
-    lista = {}
+    dic = {}
     for nr_idividual in range(nr_individuals):
         gene_translated = []
         hexa_list = [token_hex(4) for i in range(nr_of_genes)]
@@ -156,7 +151,7 @@ def generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_i
             gene_translated.append(l)
 #             sum_weights_from_duplicated_neurons(gene_translated, l)
 
-        lista[nr_idividual] = gene_translated
+        dic[nr_idividual] = gene_translated
 #         print()
     return lista          
 
