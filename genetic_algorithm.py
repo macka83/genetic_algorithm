@@ -132,9 +132,9 @@ def get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions):
             # else:
                 # gene_translated.append(l)
 
-    else:
-        gene_translated.append(l)
-    print('final', [i.differ_neuron for i in gene_translated])
+    # else:
+        # gene_translated.append(l)
+    # print('final', [i.differ_neuron for i in gene_translated])
 
 def generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner):
     dic = {}
