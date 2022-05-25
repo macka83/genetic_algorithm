@@ -153,7 +153,7 @@ def generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_i
 
         dic[nr_idividual] = gene_translated
 #         print()
-    return lista          
+    return dic          
 
 class Creature():
     def __init__(self, brain, x, y):
@@ -183,8 +183,8 @@ def sum_duplicated_neurons(res):
         dic[nr] = {}
         for i in res[nr]:
             total = dic.get(i.differ_neuron, 0) + i.weight
-            n_output = f'{i.output_id}{i.output_type}'
-            n_input = f'{i.input_id}{i.input_type}'
+            n_output = f'{i.output_type}{i.output_id}'
+            n_input = f'{i.input_type}{i.input_id}'
             dic[nr][i.differ_neuron] = [n_input, n_output, total]
     return dic
 
