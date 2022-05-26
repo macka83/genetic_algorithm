@@ -245,7 +245,8 @@ def mid_to_weight(dic):
                 mid_to_weight(dic)
                 
 def out_to_weight(dic):
-    '''weight for nested input ie.  0mid:{1mid} or out:{0mid, 0in}'''
+    '''weight for nested input ie.  0mid:{1mid} or out:{0mid, 0in}
+    use 'mid' neuron only if feeded with 'in' neurons'''
     for key in dic:
         if 'mid' in key and isinstance(dic[key], dict):
             for sub_key in dic[key]:
@@ -257,7 +258,7 @@ def out_to_weight(dic):
                 
         elif 'out' in key and isinstance(dic[key], dict):
             for sub_key in dic[key]:
-                if 'mid' in sub_key:
+                if 'mid' in sub_key and sub_key in dic:
                     dic[key][sub_key] += dic[sub_key]
             dic[key] = np.tanh(sum(dic[key].values()))
             out_to_weight(dic)
