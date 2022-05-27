@@ -81,7 +81,9 @@ def random_move():
     x,y = np.round(np.random.uniform(low=-1, high=1.0, size=2))
     return x,y
     
-
+def move_forward_backward(weight, history_position):
+    if len(history_position) >= 2:
+        
 
 # decode hexadecimal
 
