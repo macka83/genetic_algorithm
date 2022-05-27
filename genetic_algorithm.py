@@ -278,3 +278,11 @@ def weight_sum_preprocessing(edges):
         dic[i] = d[i]
     
     return dic
+
+def remove_mid_with_no_predecessor(edges):
+    '''remove mid neuron if no predecessor'''
+    set_neurons = set(i[1] for i in edges)
+    for i_nr, i in enumerate(edges):
+        if 'mid' in i[0] and i[0] not in set_neurons:
+            del edges[i_nr]
+            remove_mid_with_no_predecessor(edges)
