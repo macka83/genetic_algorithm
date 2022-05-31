@@ -290,6 +290,11 @@ def remove_mid_with_no_predecessor(edges):
         if 'mid' in i[0] and i[0] not in set_neurons:
             del edges[i_nr]
             remove_mid_with_no_predecessor(edges)
+
+            
+########################################
+###########add self loop ie. mid1-mid1
+########################################
             
 def generate_dict_of_paths(out_list, init_list, G):
     '''generate list of paths lead for output neurons'''
@@ -312,9 +317,12 @@ def filtered_neurons_paths(dic_of_paths):
         lis[out_item] = list(set(sub_list))
     return lis
 
+
+
 def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
     dic = {}
     for out in lis:
+#         print(out)
         list_plus_weight = []
         for li in lis[out]:
             for it_nr, it in enumerate(edges_no_weight):
@@ -323,5 +331,11 @@ def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
         
         remove_mid_with_no_predecessor(list_plus_weight) 
         dic_list_plus_weight = weight_sum_preprocessing(list_plus_weight)
+        
+        ## calculate weight sum
+        mid_to_weight(dic_list_plus_weight)
+#         print(dic_list_plus_weight)
+#         out_to_weight(dic_list_plus_weight)
+        
         dic[out] = dic_list_plus_weight
     return dic
