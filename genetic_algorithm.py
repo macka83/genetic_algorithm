@@ -12,10 +12,10 @@ import secrets
 import random
 from collections import Counter
 from itertools import groupby
-
+from itertools import tee
 import numpy as np
 import matplotlib.pyplot as plt
-
+import networkx as nx
 
 # ### funkcje neuronów
 
@@ -23,6 +23,10 @@ import matplotlib.pyplot as plt
 
 # In[ ]:
 
+def pairwise(iterable):
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
 
 # Bliska przeszkoda
 # 0in
@@ -120,7 +124,7 @@ def get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions):
     elif gen_component['weight_sign'] == 1:
         weight = gen_component['weight'] / 8191.25
 
-    differ_neuron = f'{input_id}{input_type}{output_id}{output_type}'
+    differ_neuron = f'{input_type}{input_id}{output_type}{output_id}'
     
     return input_id, input_type, weight, output_id, output_type, differ_neuron
 
@@ -286,3 +290,24 @@ def remove_mid_with_no_predecessor(edges):
         if 'mid' in i[0] and i[0] not in set_neurons:
             del edges[i_nr]
             remove_mid_with_no_predecessor(edges)
+            
+def generate_dict_of_paths(out_list, init_list, G):
+    '''generate list of paths lead for output neurons'''
+    dic_of_paths = {}
+    for out in out_list:
+        dic_of_paths[out] = []
+        for inp in init_list:
+            for i in nx.all_simple_paths(G, inp, out):
+                dic_of_paths[out].append(i)
+    return dic_of_paths
+
+def filtered_neurons_paths(dic_of_paths):
+    '''pairs of neurons depends on output path'''
+    lis = {}
+    for out_item in dic_of_paths:
+        sub_list = []
+        for item in dic_of_paths[out_item]:
+#             print(item)
+            sub_list += [i for i in pairwise(item)]
+        lis[out_item] = list(set(sub_list))
+    return lis
