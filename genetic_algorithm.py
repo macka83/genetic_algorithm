@@ -81,7 +81,8 @@ def random_move():
     x,y = np.round(np.random.uniform(low=-1, high=1.0, size=2))
     return x,y
     
-
+def move_forward_backward(weight, history_position):
+    if len(history_position) >= 2:
 
 # decode hexadecimal
 
@@ -90,14 +91,13 @@ def split_genome(hexval):
     if len(binary) < 32:
         factor = 32 - len(binary)
         binary = '0' * factor + binary
-  
+
     source_type, source_id = binary[0], binary[1:8]
     sink_type, sink_id = binary[8], binary[9:16]
     weight_sign, weight = binary[16], binary[17:]
 
-    gene_value_list = {key:int(val, 2) for key, val in zip(['source_type', 'source_id', 'sink_type', 'sink_id', 'weight_sign', 'weight'],
-                                          [source_type, source_id, sink_type, sink_id, weight_sign, weight])}
-    
+    gene_value_list = {key:int(val, 2) for key, val in zip(['source_type', 'source_id', 'sink_type', 'sink_id', 'weight_sign', 'weight'], [source_type, source_id, sink_type, sink_id, weight_sign, weight])}
+
     return gene_value_list
 
 def get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions):
