@@ -198,7 +198,8 @@ def remove_self_loop(dic):
             for key_2 in dic[nr]:
                 if key_1 != key_2 and sorted(key_1) == sorted(key_2):
                     list_of_dup.append(key_1)
-
+        
+        
         for dup in list_of_dup:
             del dic[nr][dup]
     return dic
@@ -340,8 +341,11 @@ def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
         
         ## calculate weight sum
         mid_to_weight(dic_list_plus_weight)
-#         print(dic_list_plus_weight)
-#         out_to_weight(dic_list_plus_weight)
+        print('dic_list_plus_weight', dic_list_plus_weight)
+#         for out_key in dic_list_plus_weight:
+        out_to_weight(dic_list_plus_weight)
+        remove_mid_from_dict(dic_list_plus_weight)
+            
         
         dic[out] = dic_list_plus_weight
     return dic
