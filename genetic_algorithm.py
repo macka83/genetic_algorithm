@@ -265,6 +265,11 @@ def out_to_weight(dic):
             dic[key] = np.tanh(sum(dic[key].values()))
             out_to_weight(dic)
 
+def remove_mid_from_dict(dic):
+    mid_list = [i for i in dic if 'mid' in i]
+    for mid in mid_list:
+        dic.pop(mid)            
+            
 ## preprocessing            
 def weight_sum_preprocessing(edges):
     '''"out" and "mid" neurons to key. Values are predecessors neurons ie. "in" or "mid"'''
@@ -290,11 +295,7 @@ def remove_mid_with_no_predecessor(edges):
             remove_mid_with_no_predecessor(edges)
 
 ## calculate paths in-mid-out and weights
-
-########################################
-###########add self loop ie. mid1-mid1
-########################################
-            
+           
 def generate_dict_of_paths(out_list, init_list, G):
     '''generate list of paths lead for output neurons'''
     
