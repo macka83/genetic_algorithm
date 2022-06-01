@@ -178,8 +178,6 @@ class Neuron():
         
 # brain generator
 
-
-
 def sum_duplicated_neurons(res):
     '''sum duplicatd neurons and return bunch neurons dictionary'''
     dic = {}
@@ -291,19 +289,28 @@ def remove_mid_with_no_predecessor(edges):
             del edges[i_nr]
             remove_mid_with_no_predecessor(edges)
 
-            
+## calculate paths in-mid-out and weights
+
 ########################################
 ###########add self loop ie. mid1-mid1
 ########################################
             
 def generate_dict_of_paths(out_list, init_list, G):
     '''generate list of paths lead for output neurons'''
+    
+    selfloop = list(nx.nodes_with_selfloops(G))
     dic_of_paths = {}
     for out in out_list:
         dic_of_paths[out] = []
         for inp in init_list:
-            for i in nx.all_simple_paths(G, inp, out):
-                dic_of_paths[out].append(i)
+            for path in nx.all_simple_paths(G, inp, out):
+                if path:
+                    ind = [i_nr for i_nr, i in enumerate(path) if i in selfloop][::-1]
+                    if ind:
+                        for i in ind:
+                            path.insert(i+1, path[i])
+                    dic_of_paths[out].append(path)
+               
     return dic_of_paths
 
 def filtered_neurons_paths(dic_of_paths):
@@ -316,8 +323,6 @@ def filtered_neurons_paths(dic_of_paths):
             sub_list += [i for i in pairwise(item)]
         lis[out_item] = list(set(sub_list))
     return lis
-
-
 
 def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
     dic = {}
