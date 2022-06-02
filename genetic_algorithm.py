@@ -191,17 +191,21 @@ def sum_duplicated_neurons(res):
     return dic
 
 def remove_self_loop(dic):
-    '''remove neurons if self looped ie: Amid->Bmid, Bmid->Amid'''
+    '''remove randomlypicked self looped ie: Amid->Bmid or Bmid->Amid'''
     for nr in dic:
         list_of_dup = []
         for key_1 in dic[nr]:
             for key_2 in dic[nr]:
                 if key_1 != key_2 and sorted(key_1) == sorted(key_2):
-                    list_of_dup.append(key_1)
-        
-        
-        for dup in list_of_dup:
-            del dic[nr][dup]
+                    list_of_dup.append(sorted([key_1, key_2]))
+                    
+        list_of_dup.sort()
+        list_of_dup
+        list_of_dup = list(list_of_dup for list_of_dup,_ in groupby(list_of_dup))
+        for i in list_of_dup:
+            rand_int = random.randint(0, 1)
+            del d['0'][i[rand_int]]
+
     return dic
 
 def generate_brain_output_dictionary(edges):
