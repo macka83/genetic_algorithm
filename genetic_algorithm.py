@@ -258,7 +258,10 @@ def out_to_weight(dic):
         if 'mid' in key and isinstance(dic[key], dict):
             for sub_key in dic[key]:
                 if 'mid' in sub_key and sub_key != key:
-                    dic[key][sub_key] += dic[sub_key]
+                    try:
+                        dic[key][sub_key] += dic[sub_key]
+                    except:
+                        print(dic)
 
             dic[key] = np.tanh(sum(dic[key].values()))
             out_to_weight(dic)
@@ -345,11 +348,12 @@ def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
         
         ## calculate weight sum
         mid_to_weight(dic_list_plus_weight)
-        print('dic_list_plus_weight', dic_list_plus_weight)
+#         print('dic_list_plus_weight', dic_list_plus_weight)
 #         for out_key in dic_list_plus_weight:
         out_to_weight(dic_list_plus_weight)
         remove_mid_from_dict(dic_list_plus_weight)
             
         
         dic[out] = dic_list_plus_weight
+        
     return dic
