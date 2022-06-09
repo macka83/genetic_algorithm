@@ -238,60 +238,12 @@ def analyze_brain(brain):
             
 # calculate weight sum
 
-def mid_to_weight(dic):
-    '''weight for clear input ie. no nested weights: 0mid:{0in, 1in} or 0mid:{0mid, 0in}'''
-    for key in dic:
-        if 'mid' in key and isinstance(dic[key], dict):
-            if set(i[:2] for i in dic[key]) == set(['in']):
-                dic[key] = np.tanh(sum(dic[key].values()))
-                mid_to_weight(dic)
-                
-            elif key in dic[key].keys() and Counter(i[:2] for i in dic[key])['mi'] == 1:
-                dic[key] = np.tanh(sum(dic[key].values()))
-                mid_to_weight(dic)
-                
-def out_to_weight(dic):
-    '''weight for nested input ie.  0mid:{1mid} or out:{0mid, 0in}
-    use 'mid' neuron only if feeded with 'in' neurons'''
-    for key in dic:
-        if 'mid' in key and isinstance(dic[key], dict):
-            for sub_key in dic[key]:
-                if 'mid' in sub_key and sub_key != key:
-                    try:
-                        dic[key][sub_key] += dic[sub_key]
-                    except:
-                        print(dic)
-
-            dic[key] = np.tanh(sum(dic[key].values()))
-            out_to_weight(dic)
-                
-        elif 'out' in key and isinstance(dic[key], dict):
-            for sub_key in dic[key]:
-                if 'mid' in sub_key and sub_key in dic:
-                    dic[key][sub_key] += dic[sub_key]
-            dic[key] = np.tanh(sum(dic[key].values()))
-            out_to_weight(dic)
-
 def remove_mid_from_dict(dic):
     mid_list = [i for i in dic if 'mid' in i]
     for mid in mid_list:
         dic.pop(mid)            
             
 ## preprocessing            
-def weight_sum_preprocessing(edges):
-    '''"out" and "mid" neurons to key. Values are predecessors neurons ie. "in" or "mid"'''
-    d = {}
-    for item in edges:
-        if item[1] in d:
-            d[item[1]].update({item[0]:item[2]})
-        else:
-            d[item[1]] = {item[0]:item[2]}
-
-    dic = {}
-    for i in sorted(d):
-        dic[i] = d[i]
-    
-    return dic
 
 def remove_mid_with_no_predecessor(edges):
     '''remove mid neuron if no predecessor'''
@@ -302,56 +254,59 @@ def remove_mid_with_no_predecessor(edges):
             remove_mid_with_no_predecessor(edges)
 
 ## calculate paths in-mid-out and weights
-           
-def generate_dict_of_paths(out_list, init_list, G):
-    '''generate list of paths lead for output neurons'''
-    
-    selfloop = list(nx.nodes_with_selfloops(G))
-    dic_of_paths = {}
-    for out in out_list:
-        dic_of_paths[out] = []
-        for inp in init_list:
-            for path in nx.all_simple_paths(G, inp, out):
-                if path:
-                    ind = [i_nr for i_nr, i in enumerate(path) if i in selfloop][::-1]
-                    if ind:
-                        for i in ind:
-                            path.insert(i+1, path[i])
-                    dic_of_paths[out].append(path)
-               
-    return dic_of_paths
 
-def filtered_neurons_paths(dic_of_paths):
-    '''pairs of neurons depends on output path'''
-    lis = {}
-    for out_item in dic_of_paths:
-        sub_list = []
-        for item in dic_of_paths[out_item]:
-            sub_list += [i for i in pairwise(item)]
-        lis[out_item] = list(set(sub_list))
-    return lis
+def sum_weights(dic, filter_list):
+    '''input: dic - dictionary of 'mid' and 'out' neurons with predecessors
+        ex.{0: {'out1': {'mid0': -2.8534106516099498, 'mid1': -0.6730352510300626},
+                'mid1': {'in2': -1.9940790477643828, 'mid0': -3.1373721959407903,'mid1': -1.880543262627804},
+                'out0': {'in2': 0.16151381046848773},
+                'mid0': {'in1': 2.8191057530901875}},
+                0 = nr of individual,
+       filter_list - list of inputs ex. ['in0', 'in2', 'in1']'''
+    for key in dic:
+        if 'mid' in key and isinstance(dic[key], dict):
+            mid_to_update = set(dic[key]).difference(set(filter_list + [key]))
+            k = 0
+            for mid_key in mid_to_update:
+                if isinstance(dic[mid_key], float):
+                    dic[key][mid_key] = np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+                    k+=1
+            if k == len(mid_to_update):
+                dic[key] = np.tanh(sum(dic[key].values()))
+                sum_weights(dic, filter_list)
+                
+        elif 'out' in key and isinstance(dic[key], dict):
+            for mid_key in dic[key]:
+                if 'mid' in mid_key and isinstance(dic[mid_key], float):
+                    dic[key][mid_key] = np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
 
-def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
+            dic[key] = np.tanh(sum(dic[key].values()))   
+
+def calculate_individual_output_weights(individuals):
     dic = {}
-    for out in lis:
-        list_plus_weight = []
-        for li in lis[out]:
-            for it_nr, it in enumerate(edges_no_weight):
-                if li == tuple(it):
-                    list_plus_weight.append(tuple(edges[it_nr]))
-        
-        remove_mid_with_no_predecessor(list_plus_weight) 
-        dic_list_plus_weight = weight_sum_preprocessing(list_plus_weight)
+    ## sum duplicates
+    individuals_sum_dup = sum_duplicated_neurons(individuals)
+    individuals_sum_dup_no_self_loop = remove_self_loop(individuals_sum_dup)
 
-        ## calculate weight sum
-#         mid_to_weight(dic_list_plus_weight)
+    for individual in individuals_sum_dup_no_self_loop:
+
+        ## preprocessing
+        edges = individuals_sum_dup_no_self_loop[individual]
+        edges = [tuple(edges[i]) for i in edges]
+        remove_mid_with_no_predecessor(edges)
+
+        init_list = list(set([i[0] for i in edges if 'in' in i[0]]))
+
+        mid_dic = {}
+
+        for item in edges:
+            if item[1] in mid_dic:
+                mid_dic[item[1]].update({item[0]: item[2]})
+            else:
+                mid_dic[item[1]] = {item[0]: item[2]}
+
+        sum_weights(mid_dic, init_list)
+        remove_mid_from_dict(mid_dic)   
+        dic[individual] = mid_dic
         
-#         out_to_weight(dic_list_plus_weight)
-#         remove_mid_from_dict(dic_list_plus_weight)
-#         print('dic_list_plus_weight')
-#         print(dic_list_plus_weight)        
-        
-        dic[out] = dic_list_plus_weight
-        print(dic)
-#         print(dic)
     return dic
