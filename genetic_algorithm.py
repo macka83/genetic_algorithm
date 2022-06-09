@@ -328,7 +328,6 @@ def filtered_neurons_paths(dic_of_paths):
     for out_item in dic_of_paths:
         sub_list = []
         for item in dic_of_paths[out_item]:
-#             print(item)
             sub_list += [i for i in pairwise(item)]
         lis[out_item] = list(set(sub_list))
     return lis
@@ -336,7 +335,6 @@ def filtered_neurons_paths(dic_of_paths):
 def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
     dic = {}
     for out in lis:
-#         print(out)
         list_plus_weight = []
         for li in lis[out]:
             for it_nr, it in enumerate(edges_no_weight):
@@ -348,8 +346,6 @@ def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
         
         ## calculate weight sum
         mid_to_weight(dic_list_plus_weight)
-#         print('dic_list_plus_weight', dic_list_plus_weight)
-#         for out_key in dic_list_plus_weight:
         out_to_weight(dic_list_plus_weight)
         remove_mid_from_dict(dic_list_plus_weight)
             
