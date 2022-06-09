@@ -12,10 +12,10 @@ import secrets
 import random
 from collections import Counter
 from itertools import groupby
-
+from itertools import tee
 import numpy as np
 import matplotlib.pyplot as plt
-
+import networkx as nx
 
 # ### funkcje neuronów
 
@@ -23,6 +23,10 @@ import matplotlib.pyplot as plt
 
 # In[ ]:
 
+def pairwise(iterable):
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
 
 # Bliska przeszkoda
 # 0in
@@ -81,7 +85,8 @@ def random_move():
     x,y = np.round(np.random.uniform(low=-1, high=1.0, size=2))
     return x,y
     
-
+# def move_forward_backward(weight, history_position):
+    # if len(history_position) >= 2:
 
 # decode hexadecimal
 
@@ -90,14 +95,13 @@ def split_genome(hexval):
     if len(binary) < 32:
         factor = 32 - len(binary)
         binary = '0' * factor + binary
-  
+
     source_type, source_id = binary[0], binary[1:8]
     sink_type, sink_id = binary[8], binary[9:16]
     weight_sign, weight = binary[16], binary[17:]
 
-    gene_value_list = {key:int(val, 2) for key, val in zip(['source_type', 'source_id', 'sink_type', 'sink_id', 'weight_sign', 'weight'],
-                                          [source_type, source_id, sink_type, sink_id, weight_sign, weight])}
-    
+    gene_value_list = {key:int(val, 2) for key, val in zip(['source_type', 'source_id', 'sink_type', 'sink_id', 'weight_sign', 'weight'], [source_type, source_id, sink_type, sink_id, weight_sign, weight])}
+
     return gene_value_list
 
 def get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions):
@@ -120,7 +124,7 @@ def get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions):
     elif gen_component['weight_sign'] == 1:
         weight = gen_component['weight'] / 8191.25
 
-    differ_neuron = f'{input_id}{input_type}{output_id}{output_type}'
+    differ_neuron = f'{input_type}{input_id}{output_type}{output_id}'
     
     return input_id, input_type, weight, output_id, output_type, differ_neuron
 
@@ -153,7 +157,7 @@ def generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_i
 
         dic[nr_idividual] = gene_translated
 #         print()
-    return lista          
+    return dic          
 
 class Creature():
     def __init__(self, brain, x, y):
@@ -174,8 +178,6 @@ class Neuron():
         
 # brain generator
 
-
-
 def sum_duplicated_neurons(res):
     '''sum duplicatd neurons and return bunch neurons dictionary'''
     dic = {}
@@ -189,16 +191,20 @@ def sum_duplicated_neurons(res):
     return dic
 
 def remove_self_loop(dic):
-    '''remove neurons if self looped ie: Amid->Bmid, Bmid->Amid'''
+    '''remove randomlypicked self looped ie: Amid->Bmid or Bmid->Amid'''
     for nr in dic:
         list_of_dup = []
         for key_1 in dic[nr]:
             for key_2 in dic[nr]:
                 if key_1 != key_2 and sorted(key_1) == sorted(key_2):
-                    list_of_dup.append(key_1)
+                    list_of_dup.append(sorted([key_1, key_2]))
+                    
+        list_of_dup.sort()
+        list_of_dup = list(list_of_dup for list_of_dup,_ in groupby(list_of_dup))
+        for i in list_of_dup:
+            rand_int = random.randint(0, 1)
+            del dic[nr][i[rand_int]]
 
-        for dup in list_of_dup:
-            del dic[nr][dup]
     return dic
 
 def generate_brain_output_dictionary(edges):
@@ -245,23 +251,32 @@ def mid_to_weight(dic):
                 mid_to_weight(dic)
                 
 def out_to_weight(dic):
-    '''weight for nested input ie.  0mid:{1mid} or out:{0mid, 0in}'''
+    '''weight for nested input ie.  0mid:{1mid} or out:{0mid, 0in}
+    use 'mid' neuron only if feeded with 'in' neurons'''
     for key in dic:
         if 'mid' in key and isinstance(dic[key], dict):
             for sub_key in dic[key]:
                 if 'mid' in sub_key and sub_key != key:
-                    dic[key][sub_key] += dic[sub_key]
+                    try:
+                        dic[key][sub_key] += dic[sub_key]
+                    except:
+                        print(dic)
 
             dic[key] = np.tanh(sum(dic[key].values()))
             out_to_weight(dic)
                 
         elif 'out' in key and isinstance(dic[key], dict):
             for sub_key in dic[key]:
-                if 'mid' in sub_key:
+                if 'mid' in sub_key and sub_key in dic:
                     dic[key][sub_key] += dic[sub_key]
             dic[key] = np.tanh(sum(dic[key].values()))
             out_to_weight(dic)
 
+def remove_mid_from_dict(dic):
+    mid_list = [i for i in dic if 'mid' in i]
+    for mid in mid_list:
+        dic.pop(mid)            
+            
 ## preprocessing            
 def weight_sum_preprocessing(edges):
     '''"out" and "mid" neurons to key. Values are predecessors neurons ie. "in" or "mid"'''
@@ -276,4 +291,67 @@ def weight_sum_preprocessing(edges):
     for i in sorted(d):
         dic[i] = d[i]
     
+    return dic
+
+def remove_mid_with_no_predecessor(edges):
+    '''remove mid neuron if no predecessor'''
+    set_neurons = set(i[1] for i in edges)
+    for i_nr, i in enumerate(edges):
+        if 'mid' in i[0] and i[0] not in set_neurons:
+            del edges[i_nr]
+            remove_mid_with_no_predecessor(edges)
+
+## calculate paths in-mid-out and weights
+           
+def generate_dict_of_paths(out_list, init_list, G):
+    '''generate list of paths lead for output neurons'''
+    
+    selfloop = list(nx.nodes_with_selfloops(G))
+    dic_of_paths = {}
+    for out in out_list:
+        dic_of_paths[out] = []
+        for inp in init_list:
+            for path in nx.all_simple_paths(G, inp, out):
+                if path:
+                    ind = [i_nr for i_nr, i in enumerate(path) if i in selfloop][::-1]
+                    if ind:
+                        for i in ind:
+                            path.insert(i+1, path[i])
+                    dic_of_paths[out].append(path)
+               
+    return dic_of_paths
+
+def filtered_neurons_paths(dic_of_paths):
+    '''pairs of neurons depends on output path'''
+    lis = {}
+    for out_item in dic_of_paths:
+        sub_list = []
+        for item in dic_of_paths[out_item]:
+            sub_list += [i for i in pairwise(item)]
+        lis[out_item] = list(set(sub_list))
+    return lis
+
+def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
+    dic = {}
+    for out in lis:
+        list_plus_weight = []
+        for li in lis[out]:
+            for it_nr, it in enumerate(edges_no_weight):
+                if li == tuple(it):
+                    list_plus_weight.append(tuple(edges[it_nr]))
+        
+        remove_mid_with_no_predecessor(list_plus_weight) 
+        dic_list_plus_weight = weight_sum_preprocessing(list_plus_weight)
+
+        ## calculate weight sum
+#         mid_to_weight(dic_list_plus_weight)
+        
+#         out_to_weight(dic_list_plus_weight)
+#         remove_mid_from_dict(dic_list_plus_weight)
+#         print('dic_list_plus_weight')
+#         print(dic_list_plus_weight)        
+        
+        dic[out] = dic_list_plus_weight
+        print(dic)
+#         print(dic)
     return dic

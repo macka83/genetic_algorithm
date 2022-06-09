@@ -200,11 +200,10 @@ def remove_self_loop(dic):
                     list_of_dup.append(sorted([key_1, key_2]))
                     
         list_of_dup.sort()
-        list_of_dup
         list_of_dup = list(list_of_dup for list_of_dup,_ in groupby(list_of_dup))
         for i in list_of_dup:
             rand_int = random.randint(0, 1)
-            del d['0'][i[rand_int]]
+            del dic[nr][i[rand_int]]
 
     return dic
 
@@ -356,3 +355,30 @@ def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
         print(dic)
 #         print(dic)
     return dic
+    
+def sum_weights(dic, filter_list):
+    '''input: dic - dictionary of 'mid' and 'out' neurons with predecessors
+        ex.{0: {'out1': {'mid0': -2.8534106516099498, 'mid1': -0.6730352510300626},
+                'mid1': {'in2': -1.9940790477643828, 'mid0': -3.1373721959407903,'mid1': -1.880543262627804},
+                'out0': {'in2': 0.16151381046848773},
+                'mid0': {'in1': 2.8191057530901875}},
+                0 = nr of individual,
+       filter_list - list of inputs ex. ['in0', 'in2', 'in1']'''
+    for key in dic:
+        if 'mid' in key and isinstance(dic[key], dict):
+            mid_to_update = set(dic[key]).difference(set(filter_list + [key]))
+            k = 0
+            for mid_key in mid_to_update:
+                if isinstance(dic[mid_key], float):
+                    dic[key][mid_key] = np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+                    k+=1
+            if k == len(mid_to_update):
+                dic[key] = np.tanh(sum(dic[key].values()))
+                sum_weights(dic, filter_list)
+                
+        elif 'out' in key and isinstance(dic[key], dict):
+            for mid_key in dic[key]:
+                if 'mid' in mid_key and isinstance(dic[mid_key], float):
+                    dic[key][mid_key] = np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+
+            dic[key] = np.tanh(sum(dic[key].values()))   
