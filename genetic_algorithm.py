@@ -343,13 +343,16 @@ def append_weight_to_neurons_in_path(lis, edges_no_weight, edges):
         
         remove_mid_with_no_predecessor(list_plus_weight) 
         dic_list_plus_weight = weight_sum_preprocessing(list_plus_weight)
-        
+
         ## calculate weight sum
-        mid_to_weight(dic_list_plus_weight)
-        out_to_weight(dic_list_plus_weight)
-        remove_mid_from_dict(dic_list_plus_weight)
-            
+#         mid_to_weight(dic_list_plus_weight)
+        
+#         out_to_weight(dic_list_plus_weight)
+#         remove_mid_from_dict(dic_list_plus_weight)
+#         print('dic_list_plus_weight')
+#         print(dic_list_plus_weight)        
         
         dic[out] = dic_list_plus_weight
-        
+        print(dic)
+#         print(dic)
     return dic
