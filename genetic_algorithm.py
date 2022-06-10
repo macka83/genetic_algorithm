@@ -56,27 +56,6 @@ def distant_obstacle_y_coord(obj_loc_y, obj_list):
 
 
 # output
-
-# przykład jak zastosować neurony executeActions.cpp
-
-def move_x(weight):
-    weight_abs = abs(weight)
-    x = np.random.choice(2, 1, p=[1-weight_abs, weight_abs])
-    if weight < 0:
-        x = x * -1
-    return x
-
-def move_y(weight):
-    weight_abs = abs(weight)
-    y = np.random.choice(2, 1, p=[1-weight_abs, weight_abs])
-    if weight < 0:
-        y = y * -1
-    return y
-
-def random_move():
-    x,y = np.round(np.random.uniform(low=-1, high=1, size=2))
-    return x,y
-
 # updated output neuron
 
 def out_up(x, y, weight):
