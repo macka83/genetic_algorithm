@@ -79,23 +79,28 @@ def random_move():
 
 # updated output neuron
 
-def move_up(x, y, weight):
+def out_up(x, y, weight):
+    '''move_up'''
     y1 = np.random.choice(2, 1, p=[1-weight, weight])
     return x, y+y1
 
-def move_down(x, y, weight):
+def out_down(x, y, weight):
+    '''move_down'''
     y1 = np.random.choice(2, 1, p=[1-weight, weight])
     return x, y-y1
 
-def move_left(x, y, weight):
+def out_left(x, y, weight):
+    '''move_left'''
     x1 = np.random.choice(2, 1, p=[1-weight, weight])
     return x+x1, y
 
-def move_right(x, y, weight):
+def out_right(x, y, weight):
+    '''move_right'''
     x1 = np.random.choice(2, 1, p=[1-weight, weight])
     return x-x1, y    
     
-def move_random(x, y, weight):
+def out_random(x, y, weight):
+    '''move_random'''
     factor_x, factor_y = np.random.choice(a=2, size=2, p=[1-weight, weight])
     x,y = np.random.choice(a=2, size=2, p=[1-weight, weight])
 
