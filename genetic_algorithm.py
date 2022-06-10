@@ -95,9 +95,11 @@ def move_right(x, y, weight):
     x1 = np.random.choice(2, 1, p=[1-weight, weight])
     return x-x1, y    
     
-def move_random(x, y, ):
-    x1,y1 = np.round(np.random.uniform(low=-1, high=1, size=2))
-    return x+x1, y+y1
+def move_random(x, y, weight):
+    factor_x, factor_y = np.random.choice(a=2, size=2, p=[1-weight, weight])
+    x,y = np.random.choice(a=2, size=2, p=[1-weight, weight])
+
+    return x-factor_x, y-factor_y
 
 
 # decode hexadecimal
