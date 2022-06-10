@@ -4,24 +4,16 @@
 # https://github.com/davidrmiller/biosim4
 # 
 
-# In[ ]:
-
-
 from secrets import token_hex
-import secrets
 import random
-from collections import Counter
 from itertools import groupby
 from itertools import tee
 import numpy as np
-import matplotlib.pyplot as plt
-import networkx as nx
+
 
 # ### funkcje neuronów
 
 # input
-
-# In[ ]:
 
 def pairwise(iterable):
     a, b = tee(iterable)
@@ -82,9 +74,32 @@ def move_y(weight):
     return y
 
 def random_move():
-    x,y = np.round(np.random.uniform(low=-1, high=1.0, size=2))
+    x,y = np.round(np.random.uniform(low=-1, high=1, size=2))
     return x,y
+
+# updated output neuron
+
+def move_up(x, y, weight):
+    y1 = np.random.choice(2, 1, p=[1-weight, weight])
+    return x, y+y1
+
+def move_down(x, y, weight):
+    y1 = np.random.choice(2, 1, p=[1-weight, weight])
+    return x, y-y1
+
+def move_left(x, y, weight):
+    x1 = np.random.choice(2, 1, p=[1-weight, weight])
+    return x+x1, y
+
+def move_right(x, y, weight):
+    x1 = np.random.choice(2, 1, p=[1-weight, weight])
+    return x-x1, y    
     
+def move_random(x, y, ):
+    x1,y1 = np.round(np.random.uniform(low=-1, high=1, size=2))
+    return x+x1, y+y1
+
+
 # decode hexadecimal
 
 def split_genome(hexval):
@@ -239,6 +254,8 @@ def remove_mid_with_no_predecessor(edges):
             remove_mid_with_no_predecessor(edges)
 
 ## calculate paths in-mid-out and weights
+def NormalizeData(data):
+    return round((data + 1) / 2, 3)
 
 def sum_weights(dic, filter_list):
     '''input: dic - dictionary of 'mid' and 'out' neurons with predecessors
@@ -254,7 +271,7 @@ def sum_weights(dic, filter_list):
             k = 0
             for mid_key in mid_to_update:
                 if isinstance(dic[mid_key], float):
-                    dic[key][mid_key] = np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+                    dic[key][mid_key] = NormalizeData(np.tanh(sum([dic[key][mid_key], dic[mid_key]])))
                     k+=1
             if k == len(mid_to_update):
                 dic[key] = np.tanh(sum(dic[key].values()))
@@ -263,9 +280,9 @@ def sum_weights(dic, filter_list):
         elif 'out' in key and isinstance(dic[key], dict):
             for mid_key in dic[key]:
                 if 'mid' in mid_key and isinstance(dic[mid_key], float):
-                    dic[key][mid_key] = np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+                    dic[key][mid_key] = NormalizeData(np.tanh(sum([dic[key][mid_key], dic[mid_key]])))
 
-            dic[key] = np.tanh(sum(dic[key].values()))   
+            dic[key] = NormalizeData(np.tanh(sum(dic[key].values())))   
 
 def calculate_individual_output_weights(individuals):
     dic = {}

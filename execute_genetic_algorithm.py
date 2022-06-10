@@ -31,7 +31,7 @@ def slope_intercept(x1,y1,x2,y2):
     b = y1 - a * x1     
     return a,b
 
-print(slope_intercept(3,0,2,1))
+# print(slope_intercept(3,0,2,1))
 
 if a[-2][0] == a[-1][0]:
     x = a[-1][0]
@@ -39,7 +39,7 @@ elif a[-2][0] > a[-1][0]:
     x = a[-2][0] + 1
 elif a[-2][0] < a[-1][0]:
     x = a[-2][0] - 1
-print(x)
+# print(x)
 
 a[-2][0]
 
