@@ -57,33 +57,19 @@ def distant_obstacle_y_coord(obj_loc_y, obj_list):
 
 # output
 # updated output neuron
-
-def out_up(x, y, weight):
-    '''move_up'''
-    y1 = np.random.choice(2, 1, p=[1-weight, weight])
-    return x, y+y1
-
-def out_down(x, y, weight):
-    '''move_down'''
-    y1 = np.random.choice(2, 1, p=[1-weight, weight])
-    return x, y-y1
-
-def out_left(x, y, weight):
-    '''move_left'''
-    x1 = np.random.choice(2, 1, p=[1-weight, weight])
-    return x+x1, y
-
-def out_right(x, y, weight):
-    '''move_right'''
-    x1 = np.random.choice(2, 1, p=[1-weight, weight])
-    return x-x1, y    
-    
-def out_random(x, y, weight):
-    '''move_random'''
-    factor_x, factor_y = np.random.choice(a=2, size=2, p=[1-weight, weight])
-    x,y = np.random.choice(a=2, size=2, p=[1-weight, weight])
-
-    return x-factor_x, y-factor_y
+def move(x, y, key, weight):
+    factor_1 = np.random.choice(2, 1, p=[1-weight, weight])
+    if 'out1' in key:
+        return x, y+factor_1
+    elif 'out2' in key:
+        return x, y-factor_1
+    elif 'out3' in key:
+        return x+factor_1, y
+    elif 'out4' in key:
+        return x-factor_1, y
+    elif 'out5' in key:
+        factor_2 = np.random.choice(2, 1, p=[1-weight, weight])
+        return x-factor_1, y-factor_2
 
 
 # decode hexadecimal
