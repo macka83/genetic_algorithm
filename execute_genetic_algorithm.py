@@ -7,7 +7,7 @@ nr_of_input = 3
 nr_of_actions = 3
 nr_of_inner = 3
 nr_of_genes = 16
-nr_individuals = 20
+nr_individuals = 4
 
 individuals = generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner)
 
