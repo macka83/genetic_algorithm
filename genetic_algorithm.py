@@ -20,39 +20,47 @@ def pairwise(iterable):
     next(b, None)
     return zip(a, b)
 
-# Bliska przeszkoda
-# 0in
-def close_obstacle(obj_loc_x, obj_loc_y, obj_list):
-    select_obst = 0
-    # iteruj po liście bez obiektu
-    for obj_nr in obj_list:
-        if obj_nr['coord'][0] - obj_loc_x == abs(1) and obj_nr['coord'][1] - obj_loc_y == abs(1):
-            select_obst += 1
-            
-    return select_obst/8
-       
-# Daleka przeszkoda gdy ruch po osi x
-# 1in
-def distant_obstacle_x_coord(obj_loc_x, obj_list):
-    select_obst = 0
-    # iteruj po liście bez obiektu
-    for obj_nr in obj_list:
-        if obj_nr['coord'][0] - obj_loc_x <= abs(5):
-            select_obst += 1
-            
-    return select_obst/121
+# # Bliska przeszkoda
 
-# Daleka przeszkoda gdy ruch po osi y
-# to samo j.w.
-# 2in
-def distant_obstacle_y_coord(obj_loc_y, obj_list):
-    select_obst = 0
-    # iteruj po liście bez obiektu
-    for obj_nr in obj_list:
-        if obj_nr['coord'][0] - obj_loc_y <= abs(5):
-            select_obst += 1
+def close_obstacle(key, positions):
+    if 'in0' in key:
+        pass
+    elif 'in1' in key:
+        pass
+    
+
+# # 0in
+# def close_obstacle(obj_loc_x, obj_loc_y, obj_list):
+#     select_obst = 0
+#     # iteruj po liście bez obiektu
+#     for obj_nr in obj_list:
+#         if obj_nr['coord'][0] - obj_loc_x == abs(1) and obj_nr['coord'][1] - obj_loc_y == abs(1):
+#             select_obst += 1
             
-    return select_obst/121
+#     return select_obst/8
+       
+# # Daleka przeszkoda gdy ruch po osi x
+# # 1in
+# def distant_obstacle_x_coord(obj_loc_x, obj_list):
+#     select_obst = 0
+#     # iteruj po liście bez obiektu
+#     for obj_nr in obj_list:
+#         if obj_nr['coord'][0] - obj_loc_x <= abs(5):
+#             select_obst += 1
+            
+#     return select_obst/121
+
+# # Daleka przeszkoda gdy ruch po osi y
+# # to samo j.w.
+# # 2in
+# def distant_obstacle_y_coord(obj_loc_y, obj_list):
+#     select_obst = 0
+#     # iteruj po liście bez obiektu
+#     for obj_nr in obj_list:
+#         if obj_nr['coord'][0] - obj_loc_y <= abs(5):
+#             select_obst += 1
+            
+#     return select_obst/121
 
 
 # output
@@ -284,3 +292,14 @@ def calculate_individual_output_weights(individuals):
         dic[individual] = mid_dic
         
     return dic
+
+def normalize_position_if_outside_world(position, max_border):
+            '''limit position to world border'''
+    if position < 0:
+        position = 0
+    elif position > max_border:
+        position = max_border
+    else:
+        position = position
+        
+    return position
