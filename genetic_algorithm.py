@@ -24,8 +24,11 @@ def pairwise(iterable):
 
 def close_obstacle(key, positions):
     if 'in0' in key:
+        # close obstacle
+        
         pass
     elif 'in1' in key:
+        # distant obstacle
         pass
     
 
