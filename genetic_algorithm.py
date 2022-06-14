@@ -22,15 +22,28 @@ def pairwise(iterable):
 
 # # Bliska przeszkoda
 
-def close_obstacle(key, positions):
-    if 'in0' in key:
-        # close obstacle
-        
-        pass
-    elif 'in1' in key:
-        # distant obstacle
-        pass
-    
+def slope_intercept(x1,y1,x2,y2):
+    a = (y2 - y1) / (x2 - x1)
+    b = y1 - a * x1     
+    return a,b
+
+def close_obstacle(key, pos):
+    '''key - input name
+        pos - list of individual position
+        calculate slope intercept '''
+    if pos[-2] != pos[-1]:
+        x1,y1,x2,y2 = pos[-2][0], pos[-2][1], pos[-1][0], pos[-1][1]
+        a, b = slope_intercept(x1,y1,x2,y2)
+        if 'in0' in key:
+            # close obstacle
+            
+
+        elif 'in1' in key:
+            # distant obstacle
+            pass
+        return x, y
+    else:
+        print('no movement')
 
 # # 0in
 # def close_obstacle(obj_loc_x, obj_loc_y, obj_list):
@@ -309,8 +322,9 @@ def normalize_position_if_outside_world(position, max_border):
 
 def make_smaller_(l):
     '''-2 to 2, -1 to 1'''
-    if max(l) == 2:
-        l[l.index(2)] = 1
-    elif min(l) == -2:
-        l[l.index(-2)] = -1
+    for i_nr, i in enumerate(l):
+        if i == -2:
+            l[i_nr] = -1
+        elif i == 2:
+            l[i_nr] = 1
     return l
