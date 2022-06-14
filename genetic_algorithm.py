@@ -297,7 +297,7 @@ def calculate_individual_output_weights(individuals):
     return dic
 
 def normalize_position_if_outside_world(position, max_border):
-            '''limit position to world border'''
+    '''limit position to world border'''
     if position < 0:
         position = 0
     elif position > max_border:
@@ -306,3 +306,11 @@ def normalize_position_if_outside_world(position, max_border):
         position = position
         
     return position
+
+def make_smaller_(l):
+    '''-2 to 2, -1 to 1'''
+    if max(l) == 2:
+        l[l.index(2)] = 1
+    elif min(l) == -2:
+        l[l.index(-2)] = -1
+    return l
