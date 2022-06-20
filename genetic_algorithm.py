@@ -27,23 +27,23 @@ def slope_intercept(x1,y1,x2,y2):
     b = y1 - a * x1     
     return a,b
 
-def close_obstacle(key, pos):
-    '''key - input name
-        pos - list of individual position
-        calculate slope intercept '''
-    if pos[-2] != pos[-1]:
-        x1,y1,x2,y2 = pos[-2][0], pos[-2][1], pos[-1][0], pos[-1][1]
-        a, b = slope_intercept(x1,y1,x2,y2)
-        if 'in0' in key:
-            # close obstacle
+# def close_obstacle(key, pos):
+    # '''key - input name
+        # pos - list of individual position
+        # calculate slope intercept '''
+    # if pos[-2] != pos[-1]:
+        # x1,y1,x2,y2 = pos[-2][0], pos[-2][1], pos[-1][0], pos[-1][1]
+        # a, b = slope_intercept(x1,y1,x2,y2)
+        # if 'in0' in key:
+            ##close obstacle
             
 
-        elif 'in1' in key:
-            # distant obstacle
-            pass
-        return x, y
-    else:
-        print('no movement')
+        # elif 'in1' in key:
+            ##distant obstacle
+            # pass
+        # return x, y
+    # else:
+        # print('no movement')
 
 # # 0in
 # def close_obstacle(obj_loc_x, obj_loc_y, obj_list):
@@ -81,7 +81,7 @@ def close_obstacle(key, pos):
 
 # output
 # updated output neuron
-def move(x, y, key, weight):
+def move(key, weight):
     factor_1 = np.random.choice(2, 1, p=[1-weight, weight])
     if 'out0' in key:
         return [0, int(factor_1)]
@@ -321,7 +321,7 @@ def normalize_position_if_outside_world(position, max_border):
     return position
 
 def make_smaller_(l):
-    '''-2 to 2, -1 to 1'''
+    '''-2 to -1, 2 to 1'''
     for i_nr, i in enumerate(l):
         if i == -2:
             l[i_nr] = -1
