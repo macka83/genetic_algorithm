@@ -316,7 +316,7 @@ def normalize_position_if_outside_world(position, max_border):
     elif position > max_border:
         position = max_border
     else:
-        position = position
+        pass
         
     return position
 
