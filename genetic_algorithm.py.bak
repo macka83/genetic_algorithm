@@ -4,89 +4,104 @@
 # https://github.com/davidrmiller/biosim4
 # 
 
-# In[ ]:
-
-
 from secrets import token_hex
-import secrets
 import random
-from collections import Counter
 from itertools import groupby
 from itertools import tee
 import numpy as np
-import matplotlib.pyplot as plt
-import networkx as nx
+
 
 # ### funkcje neuronów
 
 # input
-
-# In[ ]:
 
 def pairwise(iterable):
     a, b = tee(iterable)
     next(b, None)
     return zip(a, b)
 
-# Bliska przeszkoda
-# 0in
-def close_obstacle(obj_loc_x, obj_loc_y, obj_list):
-    select_obst = 0
-    # iteruj po liście bez obiektu
-    for obj_nr in obj_list:
-        if obj_nr['coord'][0] - obj_loc_x == abs(1) and obj_nr['coord'][1] - obj_loc_y == abs(1):
-            select_obst += 1
-            
-    return select_obst/8
-       
-# Daleka przeszkoda gdy ruch po osi x
-# 1in
-def distant_obstacle_x_coord(obj_loc_x, obj_list):
-    select_obst = 0
-    # iteruj po liście bez obiektu
-    for obj_nr in obj_list:
-        if obj_nr['coord'][0] - obj_loc_x <= abs(5):
-            select_obst += 1
-            
-    return select_obst/121
+# # Bliska przeszkoda
 
-# Daleka przeszkoda gdy ruch po osi y
-# to samo j.w.
-# 2in
-def distant_obstacle_y_coord(obj_loc_y, obj_list):
-    select_obst = 0
-    # iteruj po liście bez obiektu
-    for obj_nr in obj_list:
-        if obj_nr['coord'][0] - obj_loc_y <= abs(5):
-            select_obst += 1
+def slope_intercept(x1,y1,x2,y2):
+    a = (y2 - y1) / (x2 - x1)
+    b = y1 - a * x1     
+    return a,b
+
+def input_neuron(key, pos, tot_position):
+    '''key - input name
+        pos - list of individual position
+        tot_position - all individual last position '''
+    if pos[-2] != pos[-1]:
+        x1,y1,x2,y2 = pos[-2][0], pos[-2][1], pos[-1][0], pos[-1][1]
+        dx = x2-x1
+        dy = y2-y1
+        x3,y3 = x2+dx,y2+dy
+        
+        if 'in0' in key:
+            #close obstacle
+            # return 0 or 1
+            for pos in tot_position:
+                if [x3,y3] == pos:
+                    return 1
+                else:
+                    return 0
+        elif 'in1' in key:
+            #distant obstacle
+            # return between 0 and 1
             
-    return select_obst/121
+    else:
+        print('no movement')
+
+# # 0in
+# def close_obstacle(obj_loc_x, obj_loc_y, obj_list):
+#     select_obst = 0
+#     # iteruj po liście bez obiektu
+#     for obj_nr in obj_list:
+#         if obj_nr['coord'][0] - obj_loc_x == abs(1) and obj_nr['coord'][1] - obj_loc_y == abs(1):
+#             select_obst += 1
+            
+#     return select_obst/8
+       
+# # Daleka przeszkoda gdy ruch po osi x
+# # 1in
+# def distant_obstacle_x_coord(obj_loc_x, obj_list):
+#     select_obst = 0
+#     # iteruj po liście bez obiektu
+#     for obj_nr in obj_list:
+#         if obj_nr['coord'][0] - obj_loc_x <= abs(5):
+#             select_obst += 1
+            
+#     return select_obst/121
+
+# # Daleka przeszkoda gdy ruch po osi y
+# # to samo j.w.
+# # 2in
+# def distant_obstacle_y_coord(obj_loc_y, obj_list):
+#     select_obst = 0
+#     # iteruj po liście bez obiektu
+#     for obj_nr in obj_list:
+#         if obj_nr['coord'][0] - obj_loc_y <= abs(5):
+#             select_obst += 1
+            
+#     return select_obst/121
 
 
 # output
+# updated output neuron
+def move(key, weight):
+    factor_1 = np.random.choice(2, 1, p=[1-weight, weight])
+    if 'out0' in key:
+        return [0, int(factor_1)]
+    elif 'out1' in key:
+        return [0, int(-factor_1)]
+    elif 'out2' in key:
+        return [int(+factor_1), 0]
+    elif 'out3' in key:
+        return [int(-factor_1), 0]
+    elif 'out4' in key:
+        factor_2 = np.random.choice(2, 1, p=[1-weight, weight])
+        return [int(-factor_1), int(-factor_2)]
 
-# przykład jak zastosować neurony executeActions.cpp
-
-def move_x(weight):
-    weight_abs = abs(weight)
-    x = np.random.choice(2, 1, p=[1-weight_abs, weight_abs])
-    if weight < 0:
-        x = x * -1
-    return x
-
-def move_y(weight):
-    weight_abs = abs(weight)
-    y = np.random.choice(2, 1, p=[1-weight_abs, weight_abs])
-    if weight < 0:
-        y = y * -1
-    return y
-
-def random_move():
-    x,y = np.round(np.random.uniform(low=-1, high=1.0, size=2))
-    return x,y
-    
-# def move_forward_backward(weight, history_position):
-    # if len(history_position) >= 2:
 
 # decode hexadecimal
 
@@ -127,18 +142,6 @@ def get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions):
     differ_neuron = f'{input_type}{input_id}{output_type}{output_id}'
     
     return input_id, input_type, weight, output_id, output_type, differ_neuron
-
-# def sum_weights_from_duplicated_neurons(gene_translated, l):
-    # if gene_translated:
-        # for neuron in gene_translated:
-            # if neuron.differ_neuron == l.differ_neuron:
-                # neuron.weight = neuron.weight + l.weight
-            # else:
-                # gene_translated.append(l)
-
-    # else:
-        # gene_translated.append(l)
-    # print('final', [i.differ_neuron for i in gene_translated])
 
 def generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner):
     dic = {}
@@ -254,6 +257,8 @@ def remove_mid_with_no_predecessor(edges):
             remove_mid_with_no_predecessor(edges)
 
 ## calculate paths in-mid-out and weights
+def NormalizeData(data):
+    return round((data + 1) / 2, 3)
 
 def sum_weights(dic, filter_list):
     '''input: dic - dictionary of 'mid' and 'out' neurons with predecessors
@@ -269,7 +274,7 @@ def sum_weights(dic, filter_list):
             k = 0
             for mid_key in mid_to_update:
                 if isinstance(dic[mid_key], float):
-                    dic[key][mid_key] = np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+                    dic[key][mid_key] = NormalizeData(np.tanh(sum([dic[key][mid_key], dic[mid_key]])))
                     k+=1
             if k == len(mid_to_update):
                 dic[key] = np.tanh(sum(dic[key].values()))
@@ -278,9 +283,9 @@ def sum_weights(dic, filter_list):
         elif 'out' in key and isinstance(dic[key], dict):
             for mid_key in dic[key]:
                 if 'mid' in mid_key and isinstance(dic[mid_key], float):
-                    dic[key][mid_key] = np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+                    dic[key][mid_key] = NormalizeData(np.tanh(sum([dic[key][mid_key], dic[mid_key]])))
 
-            dic[key] = np.tanh(sum(dic[key].values()))   
+            dic[key] = NormalizeData(np.tanh(sum(dic[key].values())))   
 
 def calculate_individual_output_weights(individuals):
     dic = {}
@@ -310,3 +315,23 @@ def calculate_individual_output_weights(individuals):
         dic[individual] = mid_dic
         
     return dic
+
+def normalize_position_if_outside_world(position, max_border):
+    '''limit position to world border'''
+    if position < 0:
+        position = 0
+    elif position > max_border:
+        position = max_border
+    else:
+        pass
+        
+    return position
+
+def make_smaller_(l):
+    '''-2 to -1, 2 to 1'''
+    for i_nr, i in enumerate(l):
+        if i == -2:
+            l[i_nr] = -1
+        elif i == 2:
+            l[i_nr] = 1
+    return l

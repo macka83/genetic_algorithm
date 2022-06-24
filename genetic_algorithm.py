@@ -27,23 +27,43 @@ def slope_intercept(x1,y1,x2,y2):
     b = y1 - a * x1     
     return a,b
 
-# def close_obstacle(key, pos):
-    # '''key - input name
-        # pos - list of individual position
-        # calculate slope intercept '''
-    # if pos[-2] != pos[-1]:
-        # x1,y1,x2,y2 = pos[-2][0], pos[-2][1], pos[-1][0], pos[-1][1]
-        # a, b = slope_intercept(x1,y1,x2,y2)
-        # if 'in0' in key:
-            ##close obstacle
-            
+def check_overlap(tot_position, x, y):
+    for pos in tot_position:
+        if [x3,y3] == pos:
+            input = 1
+        else:
+            input = 0
+        return input
 
-        # elif 'in1' in key:
-            ##distant obstacle
-            # pass
-        # return x, y
-    # else:
-        # print('no movement')
+def input_neuron(key, pos, tot_position):
+    '''key - input name
+        pos - list of individual position
+        tot_position - all individual last position '''
+    if pos[-2] != pos[-1]:
+        x1,y1,x2,y2 = pos[-2][0], pos[-2][1], pos[-1][0], pos[-1][1]
+        dx = x2-x1
+        dy = y2-y1
+        x3,y3 = x2+dx,y2+dy
+        
+        if 'in0' in key:
+            #close obstacle
+            # return 0 or 1
+            return check_overlap(tot_position, x3, y3)
+        elif 'in1' in key:
+            #distant obstacle
+            # return between 0 and 1
+            for i in range(5):
+                if dx != 0:
+                    dx += 1
+                if dy != 0:
+                    dy += 1
+                factor = check_overlap(tot_position, x2+dx, y2+dy)
+                if factor == 0
+                    return 0
+                else:
+                    return i/5
+    else:
+        print('no movement')
 
 # # 0in
 # def close_obstacle(obj_loc_x, obj_loc_y, obj_list):
