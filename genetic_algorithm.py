@@ -50,7 +50,7 @@ def input_neuron(key, pos, tot_position):
             # return 0 or 1
             return check_overlap(tot_position, x3, y3)
         elif 'in1' in key:
-            #distant obstacle
+            #distant obstacle (5 steps forward
             # return between 0 and 1
             for i in range(5):
                 if dx != 0:
@@ -60,44 +60,13 @@ def input_neuron(key, pos, tot_position):
                 factor = check_overlap(tot_position, x2+dx, y2+dy)
                 if factor == 0
                     return 0
+                    break
                 else:
                     return i/5
+                    break
+                    
     else:
         print('no movement')
-
-# # 0in
-# def close_obstacle(obj_loc_x, obj_loc_y, obj_list):
-#     select_obst = 0
-#     # iteruj po liście bez obiektu
-#     for obj_nr in obj_list:
-#         if obj_nr['coord'][0] - obj_loc_x == abs(1) and obj_nr['coord'][1] - obj_loc_y == abs(1):
-#             select_obst += 1
-            
-#     return select_obst/8
-       
-# # Daleka przeszkoda gdy ruch po osi x
-# # 1in
-# def distant_obstacle_x_coord(obj_loc_x, obj_list):
-#     select_obst = 0
-#     # iteruj po liście bez obiektu
-#     for obj_nr in obj_list:
-#         if obj_nr['coord'][0] - obj_loc_x <= abs(5):
-#             select_obst += 1
-            
-#     return select_obst/121
-
-# # Daleka przeszkoda gdy ruch po osi y
-# # to samo j.w.
-# # 2in
-# def distant_obstacle_y_coord(obj_loc_y, obj_list):
-#     select_obst = 0
-#     # iteruj po liście bez obiektu
-#     for obj_nr in obj_list:
-#         if obj_nr['coord'][0] - obj_loc_y <= abs(5):
-#             select_obst += 1
-            
-#     return select_obst/121
-
 
 # output
 # updated output neuron

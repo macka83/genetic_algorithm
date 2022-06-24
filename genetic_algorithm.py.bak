@@ -27,6 +27,14 @@ def slope_intercept(x1,y1,x2,y2):
     b = y1 - a * x1     
     return a,b
 
+def check_overlap(tot_position, x, y):
+    for pos in tot_position:
+        if [x3,y3] == pos:
+            input = 1
+        else:
+            input = 0
+        return input
+
 def input_neuron(key, pos, tot_position):
     '''key - input name
         pos - list of individual position
@@ -40,51 +48,25 @@ def input_neuron(key, pos, tot_position):
         if 'in0' in key:
             #close obstacle
             # return 0 or 1
-            for pos in tot_position:
-                if [x3,y3] == pos:
-                    return 1
-                else:
-                    return 0
+            return check_overlap(tot_position, x3, y3)
         elif 'in1' in key:
-            #distant obstacle
+            #distant obstacle (5 steps forward
             # return between 0 and 1
-            
+            for i in range(5):
+                if dx != 0:
+                    dx += 1
+                if dy != 0:
+                    dy += 1
+                factor = check_overlap(tot_position, x2+dx, y2+dy)
+                if factor == 0
+                    return 0
+                    break
+                else:
+                    return i/5
+                    break
+                    
     else:
         print('no movement')
-
-# # 0in
-# def close_obstacle(obj_loc_x, obj_loc_y, obj_list):
-#     select_obst = 0
-#     # iteruj po liście bez obiektu
-#     for obj_nr in obj_list:
-#         if obj_nr['coord'][0] - obj_loc_x == abs(1) and obj_nr['coord'][1] - obj_loc_y == abs(1):
-#             select_obst += 1
-            
-#     return select_obst/8
-       
-# # Daleka przeszkoda gdy ruch po osi x
-# # 1in
-# def distant_obstacle_x_coord(obj_loc_x, obj_list):
-#     select_obst = 0
-#     # iteruj po liście bez obiektu
-#     for obj_nr in obj_list:
-#         if obj_nr['coord'][0] - obj_loc_x <= abs(5):
-#             select_obst += 1
-            
-#     return select_obst/121
-
-# # Daleka przeszkoda gdy ruch po osi y
-# # to samo j.w.
-# # 2in
-# def distant_obstacle_y_coord(obj_loc_y, obj_list):
-#     select_obst = 0
-#     # iteruj po liście bez obiektu
-#     for obj_nr in obj_list:
-#         if obj_nr['coord'][0] - obj_loc_y <= abs(5):
-#             select_obst += 1
-            
-#     return select_obst/121
-
 
 # output
 # updated output neuron
