@@ -58,7 +58,7 @@ def input_neuron(key, pos, tot_position):
                 if dy != 0:
                     dy += 1
                 factor = check_overlap(tot_position, x2+dx, y2+dy)
-                if factor == 0
+                if factor == 0:
                     return 0
                     break
                 else:
