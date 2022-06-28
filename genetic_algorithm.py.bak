@@ -29,7 +29,7 @@ def slope_intercept(x1,y1,x2,y2):
 
 def check_overlap(tot_position, x, y):
     for pos in tot_position:
-        if [x3,y3] == pos:
+        if [x, y] == pos:
             input = 1
         else:
             input = 0
@@ -40,10 +40,10 @@ def input_neuron(key, pos, tot_position):
         pos - list of individual position
         tot_position - all individual last position '''
     if pos[-2] != pos[-1]:
-        x1,y1,x2,y2 = pos[-2][0], pos[-2][1], pos[-1][0], pos[-1][1]
+        x1, y1, x2, y2 = pos[-2][0], pos[-2][1], pos[-1][0], pos[-1][1]
         dx = x2-x1
         dy = y2-y1
-        x3,y3 = x2+dx,y2+dy
+        x3, y3 = x2+dx, y2+dy
         
         if 'in0' in key:
             #close obstacle
@@ -58,7 +58,7 @@ def input_neuron(key, pos, tot_position):
                 if dy != 0:
                     dy += 1
                 factor = check_overlap(tot_position, x2+dx, y2+dy)
-                if factor == 0
+                if factor == 0:
                     return 0
                     break
                 else:
@@ -293,8 +293,13 @@ def calculate_individual_output_weights(individuals):
                 mid_dic[item[1]] = {item[0]: item[2]}
 
         sum_weights(mid_dic, init_list)
-        remove_mid_from_dict(mid_dic)   
-        dic[individual] = mid_dic
+        remove_mid_from_dict(mid_dic)
+    
+        dic[individual] = {}
+        dic[individual]['out'] = {}
+        dic[individual]['src'] = {}
+        dic[individual]['out'] = mid_dic
+        dic[individual]['src'] = individuals_sum_dup_no_self_loop
         
     return dic
 
