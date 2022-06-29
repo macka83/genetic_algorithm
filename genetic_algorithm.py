@@ -27,15 +27,15 @@ def slope_intercept(x1,y1,x2,y2):
     b = y1 - a * x1     
     return a,b
 
-def check_overlap(tot_position, x, y):
-    for pos in tot_position:
-        if [x, y] == pos:
+def check_overlap(result, x, y):
+    for indiv in result:
+        if [x, y] == result[indiv]['position'][-1]:
             input = 1
         else:
             input = 0
         return input
 
-def input_neuron(key, pos, tot_position):
+def input_neuron(key, pos, result):
     '''key - input name
         pos - list of individual position
         tot_position - all individual last position '''
@@ -48,7 +48,7 @@ def input_neuron(key, pos, tot_position):
         if 'in0' in key:
             #close obstacle
             # return 0 or 1
-            return check_overlap(tot_position, x3, y3)
+            return key, check_overlap(result, x3, y3)
         elif 'in1' in key:
             #distant obstacle (5 steps forward
             # return between 0 and 1
@@ -57,12 +57,12 @@ def input_neuron(key, pos, tot_position):
                     dx += 1
                 if dy != 0:
                     dy += 1
-                factor = check_overlap(tot_position, x2+dx, y2+dy)
+                factor = check_overlap(result, x2+dx, y2+dy)
                 if factor == 0:
-                    return 0
+                    return key, 0
                     break
                 else:
-                    return i/5
+                    return key, i/5
                     break
                     
     else:
@@ -83,7 +83,6 @@ def move(key, weight):
     elif 'out4' in key:
         factor_2 = np.random.choice(2, 1, p=[1-weight, weight])
         return [int(-factor_1), int(-factor_2)]
-
 
 # decode hexadecimal
 
@@ -298,8 +297,10 @@ def calculate_individual_output_weights(individuals):
         dic[individual] = {}
         dic[individual]['out'] = {}
         dic[individual]['src'] = {}
+        dic[individual]['in'] = {}
         dic[individual]['out'] = mid_dic
         dic[individual]['src'] = individuals_sum_dup_no_self_loop[individual]
+        dic[individual]['in'] = init_list
         
     return dic
 
