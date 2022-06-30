@@ -333,10 +333,12 @@ def sum_input_weights(result, nr_of_individual, in_keys, pos):
     pos- list of position of individual'''
     result_copy = copy.copy(result)
     del result_copy[nr_of_individual]
-
+    
     for key in in_keys:
         in_weight = input_neuron(key, pos, result_copy)
         for neuron in result[nr_of_individual]['brain']:
+            print(result[nr_of_individual]['position'])
+            print(in_weight)
             if in_weight[0] == result[nr_of_individual]['brain'][neuron][0]:
                 result[nr_of_individual]['brain'][neuron][2] += in_weight[1]
                 
