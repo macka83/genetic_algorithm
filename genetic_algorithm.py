@@ -9,6 +9,7 @@ import random
 from itertools import groupby
 from itertools import tee
 import numpy as np
+import copy
 
 
 # ### funkcje neuronów
@@ -296,10 +297,10 @@ def calculate_individual_output_weights(individuals):
     
         dic[individual] = {}
         dic[individual]['out'] = {}
-        dic[individual]['src'] = {}
+        dic[individual]['brain'] = {}
         dic[individual]['in'] = {}
         dic[individual]['out'] = mid_dic
-        dic[individual]['src'] = individuals_sum_dup_no_self_loop[individual]
+        dic[individual]['brain'] = individuals_sum_dup_no_self_loop[individual]
         dic[individual]['in'] = init_list
         
     return dic
@@ -323,3 +324,43 @@ def make_smaller_(l):
         elif i == 2:
             l[i_nr] = 1
     return l
+    
+def sum_input_weights(result, nr_of_individual, in_keys, pos):
+    '''sum calculated input based on environment with neurons containing input
+    result- list of creatures
+    nr_of_individual- number individual
+    in_keys- list of inputs id
+    pos- list of position of individual'''
+    result_copy = copy.copy(result)
+    del result_copy[nr_of_individual]
+
+    for key in in_keys:
+        in_weight = input_neuron(key, pos, result_copy)
+        for neuron in result[nr_of_individual]['brain']:
+            if in_weight[0] == result[nr_of_individual]['brain'][neuron][0]:
+                result[nr_of_individual]['brain'][neuron][2] += in_weight[1]
+                
+    return result 
+    
+def apply_input(result, nr_of_individual):
+    '''apply input regarding position of other individuals'''
+
+    pos = result[nr_of_individual]['position']
+    in_keys = result[nr_of_individual]['in']
+
+    result = sum_input_weights(result, nr_of_individual, in_keys, pos)
+
+    edges = result[nr_of_individual]['brain']
+    edges = [tuple(edges[i]) for i in edges]
+
+    mid_dic = {}
+    for item in edges:
+        if item[1] in mid_dic:
+            mid_dic[item[1]].update({item[0]: item[2]})
+        else:
+            mid_dic[item[1]] = {item[0]: item[2]}
+
+    sum_weights(mid_dic, in_keys)
+    remove_mid_from_dict(mid_dic)
+    
+    result[nr_of_individual]['out'] = mid_dic
