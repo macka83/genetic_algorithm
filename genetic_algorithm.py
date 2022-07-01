@@ -67,8 +67,7 @@ def input_neuron(key, pos, result):
                     break
                     
     else:
-        print('no movement')
-
+        return key, 0
 # output
 # updated output neuron
 def move(key, weight):
@@ -141,7 +140,7 @@ def generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_i
 #             sum_weights_from_duplicated_neurons(gene_translated, l)
 
         dic[nr_idividual] = gene_translated
-#         print()
+
     return dic          
 
 class Creature():
@@ -212,15 +211,7 @@ def mid_neuron(brain, edges):
                     brain[key].update({item[0]:{'w':item[2]}})
                 elif key == item[1] and 'mid' not in item[0]:
                     brain[key].update({item[0]:{'w':item[2]}})
-
-def analyze_brain(brain):
-    for k, v in brain.items():
-        if isinstance(v, dict) and len(v) >= 2:
-            print('if', k, v)
-#             analyze_brain(brain)
-        else:
-            print('else', k, v)
-            
+           
 # calculate weight sum
 
 def remove_mid_from_dict(dic):
@@ -242,7 +233,7 @@ def remove_mid_with_no_predecessor(edges):
 def NormalizeData(data):
     return round((data + 1) / 2, 3)
 
-def sum_weights(dic, filter_list):
+def sum_weights(dic, input_list):
     '''input: dic - dictionary of 'mid' and 'out' neurons with predecessors
         ex.{0: {'out1': {'mid0': -2.8534106516099498, 'mid1': -0.6730352510300626},
                 'mid1': {'in2': -1.9940790477643828, 'mid0': -3.1373721959407903,'mid1': -1.880543262627804},
@@ -252,7 +243,7 @@ def sum_weights(dic, filter_list):
        filter_list - list of inputs ex. ['in0', 'in2', 'in1']'''
     for key in dic:
         if 'mid' in key and isinstance(dic[key], dict):
-            mid_to_update = set(dic[key]).difference(set(filter_list + [key]))
+            mid_to_update = set(dic[key]).difference(set(input_list + [key]))
             k = 0
             for mid_key in mid_to_update:
                 if isinstance(dic[mid_key], float):
@@ -260,7 +251,7 @@ def sum_weights(dic, filter_list):
                     k+=1
             if k == len(mid_to_update):
                 dic[key] = np.tanh(sum(dic[key].values()))
-                sum_weights(dic, filter_list)
+                sum_weights(dic, input_list)
                 
         elif 'out' in key and isinstance(dic[key], dict):
             for mid_key in dic[key]:
@@ -274,7 +265,7 @@ def calculate_individual_output_weights(individuals):
     ## sum duplicates
     individuals_sum_dup = sum_duplicated_neurons(individuals)
     individuals_sum_dup_no_self_loop = remove_self_loop(individuals_sum_dup)
-
+    
     for individual in individuals_sum_dup_no_self_loop:
 
         ## preprocessing
@@ -337,8 +328,8 @@ def sum_input_weights(result, nr_of_individual, in_keys, pos):
     for key in in_keys:
         in_weight = input_neuron(key, pos, result_copy)
         for neuron in result[nr_of_individual]['brain']:
-            print(result[nr_of_individual]['position'])
-            print(in_weight)
+            # print(result[nr_of_individual]['position'])
+            # print(in_weight)
             if in_weight[0] == result[nr_of_individual]['brain'][neuron][0]:
                 result[nr_of_individual]['brain'][neuron][2] += in_weight[1]
                 
@@ -354,6 +345,7 @@ def apply_input(result, nr_of_individual):
 
     edges = result[nr_of_individual]['brain']
     edges = [tuple(edges[i]) for i in edges]
+    remove_mid_with_no_predecessor(edges)
 
     mid_dic = {}
     for item in edges:
@@ -361,8 +353,10 @@ def apply_input(result, nr_of_individual):
             mid_dic[item[1]].update({item[0]: item[2]})
         else:
             mid_dic[item[1]] = {item[0]: item[2]}
-
+    
     sum_weights(mid_dic, in_keys)
+
+
     remove_mid_from_dict(mid_dic)
     
     result[nr_of_individual]['out'] = mid_dic
