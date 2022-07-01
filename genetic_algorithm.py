@@ -15,18 +15,7 @@ import copy
 # ### funkcje neuronów
 
 # input
-
-def pairwise(iterable):
-    a, b = tee(iterable)
-    next(b, None)
-    return zip(a, b)
-
 # # Bliska przeszkoda
-
-def slope_intercept(x1,y1,x2,y2):
-    a = (y2 - y1) / (x2 - x1)
-    b = y1 - a * x1     
-    return a,b
 
 def check_overlap(result, x, y):
     for indiv in result:
