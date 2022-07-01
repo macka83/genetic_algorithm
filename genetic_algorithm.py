@@ -271,17 +271,18 @@ def calculate_individual_output_weights(individuals):
                 mid_dic[item[1]].update({item[0]: item[2]})
             else:
                 mid_dic[item[1]] = {item[0]: item[2]}
-
-        sum_weights(mid_dic, init_list)
-        remove_mid_from_dict(mid_dic)
-    
-        dic[individual] = {}
-        dic[individual]['out'] = {}
-        dic[individual]['brain'] = {}
-        dic[individual]['in'] = {}
-        dic[individual]['out'] = mid_dic
-        dic[individual]['brain'] = individuals_sum_dup_no_self_loop[individual]
-        dic[individual]['in'] = init_list
+        
+        if mid_dic:
+            sum_weights(mid_dic, init_list)
+            remove_mid_from_dict(mid_dic)
+        
+            dic[individual] = {}
+            dic[individual]['out'] = {}
+            dic[individual]['brain'] = {}
+            dic[individual]['in'] = {}
+            dic[individual]['out'] = mid_dic
+            dic[individual]['brain'] = individuals_sum_dup_no_self_loop[individual]
+            dic[individual]['in'] = init_list
         
     return dic
 
