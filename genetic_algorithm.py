@@ -350,3 +350,14 @@ def apply_input(result, nr_of_individual):
     remove_mid_from_dict(mid_dic)
     
     result[nr_of_individual]['out'] = mid_dic
+    
+
+def prevent_overlap_moevement(last_pos_list):
+    '''check if last position of each individual ovrlap with another. If yes then last posotion is switched to last but one. 
+    last_pos_list - dictionary of individuals kesy and last position'''
+    for key_1, val_1 in last_pos_list.items():
+        last_pos_list_copy = copy.copy(last_pos_list)
+        del last_pos_list_copy[key_1]
+        for key_2, val_2 in last_pos_list_copy.items():
+            if key_1 == key_2:
+                result[key_2]['position'][-1] == result[key_2]['position'][-2]
