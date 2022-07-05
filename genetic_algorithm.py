@@ -293,8 +293,7 @@ def normalize_position_if_outside_world(position, max_border):
         position = 0
     elif position > max_border:
         position = max_border
-    else:
-        pass
+
         
     return position
 
@@ -363,4 +362,20 @@ def prevent_overlap_movement(last_pos_list, result):
         del last_pos_list_copy[key_1]
         for key_2, val_2 in last_pos_list_copy.items():
             if val_1 == val_2:
-                result[key_2]['position'][-1] == result[key_2]['position'][-2]
+                result[key_2]['position'][-1] = result[key_2]['position'][-2]
+                
+def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
+    position_list = []
+    for out in result[indiv]['out']:
+        new_pos = move(out, result[indiv]['out'][out])
+        position_list.append(new_pos)
+    
+    if position_list:
+        position_list = list(map(sum, zip(*position_list)))
+        position_list = make_smaller_(position_list)
+        position_list = list(map(sum, zip(*[[x, y]] + [position_list])))
+
+        position_list[0] = normalize_position_if_outside_world(position_list[0], world_size_x)
+        position_list[1] = normalize_position_if_outside_world(position_list[1], world_size_y)
+
+        result[indiv]['position'].append(position_list)
