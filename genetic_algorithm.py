@@ -283,6 +283,7 @@ def calculate_individual_output_weights(individuals):
             dic[individual]['out'] = mid_dic
             dic[individual]['brain'] = individuals_sum_dup_no_self_loop[individual]
             dic[individual]['in'] = init_list
+
         
     return dic
 
@@ -349,6 +350,7 @@ def apply_input(result, nr_of_individual):
 
     remove_mid_from_dict(mid_dic)
     
+    result[nr_of_individual]['brain_after_pruning'] = edges
     result[nr_of_individual]['out'] = mid_dic
     
 
