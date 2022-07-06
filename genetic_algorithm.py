@@ -362,9 +362,11 @@ def prevent_overlap_movement(last_pos_list, result):
         del last_pos_list_copy[key_1]
         for key_2, val_2 in last_pos_list_copy.items():
             if val_1 == val_2:
-                if result[key_2]['position'][-1] != result[key_2]['position'][-2]:
-                    result[key_2]['position'][-1] = result[key_2]['position'][-2]
-                    last_pos_list[key_2] = result[key_2]['position'][-2]
+                pos_minus = result[key_2]['position']
+
+                if pos_minus[-1] != pos_minus[-2]:
+                    pos_minus[-1] = pos_minus[-2]
+                    last_pos_list[key_2] = pos_minus[-2]
                     prevent_overlap_movement(last_pos_list, result)
                 
 def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
