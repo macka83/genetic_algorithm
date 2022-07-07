@@ -7,10 +7,9 @@
 from secrets import token_hex
 import random
 from itertools import groupby, tee, product
-# from itertools import tee
-# from itertools import product 
 import numpy as np
 import copy
+from tqdm import tqdm
 
 # ### funkcje neuronów
 
@@ -447,7 +446,18 @@ def mutation(binary_gene, weight=0.01):
 
     return ''.join(binary_to_ints)
     
+  
 ## visualisation
+ 
+def update(i):
+    ax.clear()
+    ax.set_facecolor(plt.cm.Blues(.2))
+
+    ax.set_xlim([0,world_size_x])
+    ax.set_ylim([0,world_size_y])
+    ax.set_title('moving')
+    ax.scatter(x=coords[i]['x'],y=coords[i]['y'], c='red', s=2, marker='o')
+    [spine.set_visible(False) for spine in ax.spines.values()]
     
 def generate_dictionary_of_coords(result, list_length):
     '''generate list of x and y dictionary, from each individuals' steps''' 
@@ -456,4 +466,86 @@ def generate_dictionary_of_coords(result, list_length):
         for pos_nr, pos in enumerate(result[indiv]['position']):
             coords[pos_nr]['x'].append(pos[0])
             coords[pos_nr]['y'].append(pos[1])
-    return coords
+    return coords  
+
+## main loop
+
+def initial_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner, world_size):
+    '''generates list of individuals with genome and brain'''
+    individuals = generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner)
+
+    ## initial brain and position generator
+    result = calculate_individual_output_weights(individuals)
+
+    ## add genome
+    for indiv in result:
+        result[indiv]['genome'] = [i.hex_id for i in individuals[indiv]]
+        
+    ## assign position remove brains without output
+    pos = generate_random_coords(world_size, nr_individuals)
+    assign_position_and_remove_outputless_brains(result, pos)
+    return result
+
+def steps_in_generation(world_size, result, world_size_x, world_size_y):
+    n = 0
+    pbar = tqdm(total=world_size, initial=n)
+
+    while world_size>n: 
+        pos_list = [tuple(result[obj]['position'][-1]) for obj in result]
+        res = list(set([ele for ele in pos_list if pos_list.count(ele) > 1]))
+        pbar.update(1)
+        
+        for indiv in result:
+            x, y = result[indiv]['position'][-1][0], result[indiv]['position'][-1][1]
+            if n<1:
+                calculate_position(result, indiv, x, y, world_size_x, world_size_y)    
+            elif n >= 1:
+                apply_input(result, indiv)
+                calculate_position(result, indiv, x, y, world_size_x, world_size_y)
+                
+        last_pos_list = {obj:result[obj]['position'][-1] for obj in result}
+        prevent_overlap_movement(last_pos_list, result)
+        n += 1
+    pbar.close()
+    return result
+    
+def select_individuals_from_safezone(world_size, result):
+    '''select individuals from safe zone and renumerate'''
+    safe_zone = int(world_size * 0.75)
+    n=0
+    survivors = {}
+    for key in result:
+        x = result[key]['position'][-1][0]
+        if x > safe_zone:
+            survivors[n] = {'genome':[]}
+            survivors[n]['genome'] = result[key]['genome']
+            n+=1
+    return survivors
+    
+def asexual_reproduction_and_mutation(world_size, result, nr_individuals):
+    survivors = select_individuals_from_safezone(world_size, result)
+
+    ## reproduct survivors        
+    new_indiv_len = nr_individuals - list(survivors.keys())[-1]
+    new_indiv_nr = np.random.choice(list(survivors.keys()), new_indiv_len-1)
+
+    ## mutate population
+    for key in new_indiv_nr:
+        survivors[n] = {'genome':[]}
+        survivors[n]['genome'] = survivors[key]['genome'] 
+        n+=1
+
+    for key in survivors:
+        genome_mutation(survivors[key]['genome'])
+    
+    return survivors
+    
+def next_generation(survivors):
+    dic = {}
+    for nr_idividual in survivors:
+        dic[nr_idividual] = gene_to_neuron(survivors[nr_idividual]['genome'], nr_of_input, nr_of_actions, nr_of_inner)
+
+    result = calculate_individual_output_weights(dic)    
+    pos = generate_random_coords(world_size, nr_individuals)
+    assign_position_and_remove_outputless_brains(result, pos)
+    return result
