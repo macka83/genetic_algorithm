@@ -11,7 +11,6 @@ from itertools import tee
 import numpy as np
 import copy
 
-
 # ### funkcje neuronów
 
 # input
@@ -366,17 +365,28 @@ def prevent_overlap_movement(last_pos_list, result):
     '''check if last position of each individual ovrlap with another. If yes then last posotion is switched to last but one. 
     last_pos_list - dictionary of individuals kesy and last position
     result- total info about all individuals'''
+    list_of_resuls = []
     for key_1, val_1 in last_pos_list.items():
         last_pos_list_copy = copy.copy(last_pos_list)
         del last_pos_list_copy[key_1]
+        list_of_keys = []
         for key_2, val_2 in last_pos_list_copy.items():
             if val_1 == val_2:
-                pos_minus = result[key_2]['position']
-
-                if pos_minus[-1] != pos_minus[-2]:
-                    pos_minus[-1] = pos_minus[-2]
-                    last_pos_list[key_2] = pos_minus[-2]
+                pos2_minus = result[key_2]['position']
+                pos1_minus = result[key_1]['position']
+                
+                if pos2_minus[-1] != pos2_minus[-2]:
+                    pos2_minus[-1] = pos2_minus[-2]
+                    last_pos_list[key_2] = pos2_minus[-2]
                     prevent_overlap_movement(last_pos_list, result)
+                    list_of_resuls.append(2)
+                elif pos2_minus[-1]== pos2_minus[-2] and pos1_minus[-1] != pos1_minus[-2]:
+                    pos1_minus[-1] = pos1_minus[-2]
+                    last_pos_list[key_1] = pos1_minus[-2]
+                    prevent_overlap_movement(last_pos_list, result)
+                    list_of_resuls.append(1)
+                else:
+                    list_of_resuls.append([[key_1, key_2]])
                 
 def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
     position_list = []
@@ -411,3 +421,24 @@ def mutation(binary_gene, weight=0.01):
     binary_to_ints[ind] = str(mutant[0])
 
     return ''.join(binary_to_ints)
+    
+## visualisation
+
+def update(i, coords, world_size_x, world_size_y):
+    ax.clear()
+    ax.set_facecolor(plt.cm.Blues(.2))
+
+    ax.set_xlim([0,world_size_x])
+    ax.set_ylim([0,world_size_y])
+    ax.set_title('moving')
+    ax.scatter(x=coords[i]['x'],y=coords[i]['y'], c='red', s=2, marker='o')
+    [spine.set_visible(False) for spine in ax.spines.values()] #remove chart 
+    
+def generate_dictionary_of_coords(result):
+    '''generate list of x and y dictionary, from each individuals' steps''' 
+    coords = [{'x':[], 'y':[]} for key in range(len(result[indiv]['position']))]
+    for indiv in result:
+        for pos_nr, pos in enumerate(result[indiv]['position']):
+            coords[pos_nr]['x'].append(pos[0])
+            coords[pos_nr]['y'].append(pos[1])
+    return coords
