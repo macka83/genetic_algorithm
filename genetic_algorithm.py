@@ -520,10 +520,10 @@ def select_individuals_from_safezone(world_size, result):
             survivors[n] = {'genome':[]}
             survivors[n]['genome'] = result[key]['genome']
             n+=1
-    return survivors
+    return survivors, n
     
 def asexual_reproduction_and_mutation(world_size, result, nr_individuals):
-    survivors = select_individuals_from_safezone(world_size, result)
+    survivors, n = select_individuals_from_safezone(world_size, result)
 
     ## reproduct survivors        
     new_indiv_len = nr_individuals - list(survivors.keys())[-1]
@@ -540,7 +540,7 @@ def asexual_reproduction_and_mutation(world_size, result, nr_individuals):
     
     return survivors
     
-def next_generation(survivors):
+def next_generation(survivors, nr_of_input, nr_of_actions, nr_of_inner, world_size, nr_individuals):
     dic = {}
     for nr_idividual in survivors:
         dic[nr_idividual] = gene_to_neuron(survivors[nr_idividual]['genome'], nr_of_input, nr_of_actions, nr_of_inner)
