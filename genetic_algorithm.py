@@ -6,8 +6,9 @@
 
 from secrets import token_hex
 import random
-from itertools import groupby
-from itertools import tee
+from itertools import groupby, tee, product
+# from itertools import tee
+# from itertools import product 
 import numpy as np
 import copy
 
@@ -58,8 +59,10 @@ def input_neuron(key, pos, result):
         return key, 0
 # output
 # updated output neuron
+
+## TODO check if 'out4' is properly executed 
 def move(key, weight):
-    factor_1 = np.random.choice(2, 1, p=[1-weight, weight])
+    factor_1 = np.random.choice(2, 1, p=[weight, 1-weight])
     if 'out0' in key:
         return [0, int(factor_1)]
     elif 'out1' in key:
@@ -69,7 +72,7 @@ def move(key, weight):
     elif 'out3' in key:
         return [int(-factor_1), 0]
     elif 'out4' in key:
-        factor_2 = np.random.choice(2, 1, p=[1-weight, weight])
+        factor_2 = np.random.choice(2, 1, p=[weight, 1-weight])
         return [int(-factor_1), int(-factor_2)]
 
 # decode hexadecimal
@@ -82,14 +85,8 @@ def hexval_to_bin(gene):
         return binary
 
 def split_genome(hexval):
-    # binary = bin(int(hexval, 16))[2:]
-    # if len(binary) < 32:
-        # factor = 32 - len(binary)
-        # binary = '0' * factor + binary
-        
+       
     binary = hexval_to_bin(hexval)    
- 
-
     source_type, source_id = binary[0], binary[1:8]
     sink_type, sink_id = binary[8], binary[9:16]
     weight_sign, weight = binary[16], binary[17:]
@@ -122,24 +119,25 @@ def get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions):
     
     return input_id, input_type, weight, output_id, output_type, differ_neuron
 
+def gene_to_neuron(hexa_list, nr_of_input, nr_of_actions, nr_of_inner):
+    gene_translated = []
+    for l, hex_id in enumerate(hexa_list):
+        gen_component = split_genome(hex_id)
+        
+        input_id, input_type, weight, output_id, output_type, differ_neuron = get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions)
+        
+        l = Neuron(hex_id, input_id, input_type, weight, output_id, output_type, differ_neuron)
+        gene_translated.append(l)
+    return gene_translated
+    
 def generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner):
     dic = {}
     for nr_idividual in range(nr_individuals):
-        gene_translated = []
+        
         hexa_list = [token_hex(4) for i in range(nr_of_genes)]
-        for l, hex_id in enumerate(hexa_list):
+        dic[nr_idividual] = gene_to_neuron(hexa_list, nr_of_input, nr_of_actions, nr_of_inner)
 
-            gen_component = split_genome(hex_id)
-            
-            input_id, input_type, weight, output_id, output_type, differ_neuron = get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions)
-            
-            l = Neuron(hex_id, input_id, input_type, weight, output_id, output_type, differ_neuron)
-            gene_translated.append(l)
-#             sum_weights_from_duplicated_neurons(gene_translated, l)
-
-        dic[nr_idividual] = gene_translated
-
-    return dic          
+    return dic       
 
 class Creature():
     def __init__(self, brain, x, y):
@@ -157,7 +155,27 @@ class Neuron():
         self.output_id = output_id
         self.output_type = output_type
         self.differ_neuron = differ_neuron
-        
+  
+## position generator  
+  
+def generate_random_coords(world_size, nr_individuals):
+    '''TODo if world_size_x != world_size_y fit then limit coord_full_list'''
+    coord_full_list = np.array(list(product(range(world_size), repeat=2)))
+    ind = np.random.choice(len(coord_full_list), nr_individuals, replace=False)
+    pos = coord_full_list[ind]
+    return pos
+  
+def assign_position_and_remove_outputless_brains(result, pos):
+    indiv_to_del = []
+    for indiv in result:
+        if result[indiv]['out']:
+            result[indiv]['position'] = [list(pos[indiv])]
+        else:
+            indiv_to_del.append(indiv)
+
+    for key in indiv_to_del:
+        del result[key]   
+ 
 # brain generator
 
 def sum_duplicated_neurons(res):
@@ -406,6 +424,13 @@ def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
         
 ## mutation 
 
+def genome_mutation(genome):
+    for gene_nr, gene in enumerate(genome):
+        binary_gene = hexval_to_bin(gene)
+        binary_mutated = mutation(binary_gene, weight=0.09)
+        if binary_mutated != binary_gene:
+            genome[gene_nr] = hex(int(binary_mutated, 2))[2:]
+
 def mutation(binary_gene, weight=0.01):
     '''make punctual mutation on gene with given weight
     binary_gene - binary string - '010101011100'
@@ -423,20 +448,10 @@ def mutation(binary_gene, weight=0.01):
     return ''.join(binary_to_ints)
     
 ## visualisation
-
-def update(i, coords, world_size_x, world_size_y):
-    ax.clear()
-    ax.set_facecolor(plt.cm.Blues(.2))
-
-    ax.set_xlim([0,world_size_x])
-    ax.set_ylim([0,world_size_y])
-    ax.set_title('moving')
-    ax.scatter(x=coords[i]['x'],y=coords[i]['y'], c='red', s=2, marker='o')
-    [spine.set_visible(False) for spine in ax.spines.values()] #remove chart 
     
-def generate_dictionary_of_coords(result):
+def generate_dictionary_of_coords(result, list_length):
     '''generate list of x and y dictionary, from each individuals' steps''' 
-    coords = [{'x':[], 'y':[]} for key in range(len(result[indiv]['position']))]
+    coords = [{'x':[], 'y':[]} for key in range(list_length)]
     for indiv in result:
         for pos_nr, pos in enumerate(result[indiv]['position']):
             coords[pos_nr]['x'].append(pos[0])
