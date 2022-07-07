@@ -75,11 +75,21 @@ def move(key, weight):
 
 # decode hexadecimal
 
-def split_genome(hexval):
-    binary = bin(int(hexval, 16))[2:]
-    if len(binary) < 32:
+def hexval_to_bin(gene):
+    binary = bin(int(gene, 16))[2:]
+    if len(binary) <= 32:
         factor = 32 - len(binary)
         binary = '0' * factor + binary
+        return binary
+
+def split_genome(hexval):
+    # binary = bin(int(hexval, 16))[2:]
+    # if len(binary) < 32:
+        # factor = 32 - len(binary)
+        # binary = '0' * factor + binary
+        
+    binary = hexval_to_bin(hexval)    
+ 
 
     source_type, source_id = binary[0], binary[1:8]
     sink_type, sink_id = binary[8], binary[9:16]
@@ -352,7 +362,6 @@ def apply_input(result, nr_of_individual):
     result[nr_of_individual]['brain_after_pruning'] = edges
     result[nr_of_individual]['out'] = mid_dic
     
-
 def prevent_overlap_movement(last_pos_list, result):
     '''check if last position of each individual ovrlap with another. If yes then last posotion is switched to last but one. 
     last_pos_list - dictionary of individuals kesy and last position
@@ -384,3 +393,21 @@ def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
         position_list[1] = normalize_position_if_outside_world(position_list[1], world_size_y)
 
         result[indiv]['position'].append(position_list)
+        
+## mutation 
+
+def mutation(binary_gene, weight=0.01):
+    '''make punctual mutation on gene with given weight
+    binary_gene - binary string - '010101011100'
+    weight - float between 0-1
+    '''
+    ind = np.random.randint(len(binary_gene))
+    if int(binary_gene[ind])==1:
+        mutant = np.random.choice(2, 1, p=[weight, 1-weight])
+    else:
+        mutant = np.random.choice(2, 1, p=[1-weight, weight])
+    
+    binary_to_ints = [i for i in list(binary_gene)]
+    binary_to_ints[ind] = str(mutant[0])
+
+    return ''.join(binary_to_ints)
