@@ -545,7 +545,9 @@ def next_generation(survivors, nr_of_input, nr_of_actions, nr_of_inner, world_si
     for nr_idividual in survivors:
         dic[nr_idividual] = gene_to_neuron(survivors[nr_idividual]['genome'], nr_of_input, nr_of_actions, nr_of_inner)
 
-    result = calculate_individual_output_weights(dic)    
+    result = calculate_individual_output_weights(dic)
+    for indiv in result:
+        result[indiv]['genome'] = survivors[indiv]['genome']
     pos = generate_random_coords(world_size, nr_individuals)
     assign_position_and_remove_outputless_brains(result, pos)
     return result
