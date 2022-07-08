@@ -534,17 +534,19 @@ def asexual_reproduction_and_mutation(world_size, result, nr_individuals):
     new_indiv_len = nr_individuals - list(survivors.keys())[-1]
     new_indiv_nr = np.random.choice(list(survivors.keys()), new_indiv_len-1)
 
-    ## mutate population
     for key in new_indiv_nr:
         survivors[n] = {'genome':[]}
         survivors[n]['genome'] = survivors[key]['genome'] 
         n+=1
-
+        
+    ## mutate population
     for key in survivors:
         genome_mutation(survivors[key]['genome'])
     
     return survivors
-    
+
+
+   
 def next_generation(survivors, nr_of_input, nr_of_actions, nr_of_inner, world_size, nr_individuals):
     dic = {}
     for nr_idividual in survivors:
