@@ -430,7 +430,7 @@ def genome_mutation(genome):
         if binary_mutated != binary_gene:
             genome[gene_nr] = hex(int(binary_mutated, 2))[2:]
 
-def mutation(binary_gene, weight=0.01):
+def mutation(binary_gene, weight=0.001):
     '''make punctual mutation on gene with given weight
     binary_gene - binary string - '010101011100'
     weight - float between 0-1
@@ -511,7 +511,7 @@ def steps_in_generation(world_size, result, world_size_x, world_size_y):
     
 def select_individuals_from_safezone(world_size, result):
     '''select individuals from safe zone and renumerate'''
-    safe_zone = int(world_size * 0.75)
+    safe_zone = int(world_size * 0.6)
     n=0
     survivors = {}
     for key in result:
