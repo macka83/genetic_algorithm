@@ -459,14 +459,19 @@ def update(i):
     ax.scatter(x=coords[i]['x'],y=coords[i]['y'], c='red', s=2, marker='o')
     [spine.set_visible(False) for spine in ax.spines.values()]
     
-def generate_dictionary_of_coords(result, list_length):
+def hex_to_rgb(hex_value):
+#     h = hex_value.lstrip('#')
+    return tuple(int(hex_value[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+
+def generate_dictionary_of_coords(result, list_length, dic_color):
     '''generate list of x and y dictionary, from each individuals' steps''' 
-    coords = [{'x':[], 'y':[]} for key in range(list_length)]
+    coords = [{'x':[], 'y':[], 'color':[]} for key in range(list_length+1)]
     for indiv in result:
         for pos_nr, pos in enumerate(result[indiv]['position']):
             coords[pos_nr]['x'].append(pos[0])
             coords[pos_nr]['y'].append(pos[1])
-    return coords  
+            coords[pos_nr]['color'].append(dic_color[indiv])
+    return coords
 
 ## main loop
 
