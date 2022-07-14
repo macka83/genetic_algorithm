@@ -413,10 +413,7 @@ def prevent_overlap_movement(last_pos_list, result):
 def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
     out_weight = result[indiv]['out']
     position_list = (move(out, out_weight[out]) for out in out_weight)
-    # :
-        # new_pos = 
-        # position_list.append(new_pos)
-    
+
     if position_list:
         position_list = list(map(sum, zip(*position_list)))
         position_list = make_smaller_(position_list)
