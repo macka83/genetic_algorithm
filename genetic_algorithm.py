@@ -235,7 +235,7 @@ def remove_mid_from_dict(dic):
         dic.pop(mid)            
             
 ## preprocessing            
-
+## from 'steps_in_generation' 
 def remove_mid_with_no_predecessor(edges):
     '''remove mid neuron if no predecessor'''
     set_neurons = set(i[1] for i in edges)
@@ -248,6 +248,7 @@ def remove_mid_with_no_predecessor(edges):
 def NormalizeData(data):
     return round((data + 1) / 2, 3)
 
+## from 'steps_in_generation' 
 def sum_weights(dic, input_list):
     '''input: dic - dictionary of 'mid' and 'out' neurons with predecessors
         ex.{0: {'out1': {'mid0': -2.8534106516099498, 'mid1': -0.6730352510300626},
@@ -332,6 +333,7 @@ def make_smaller_(l):
             l[i_nr] = 1
     return l
     
+## from 'steps_in_generation'  
 def sum_input_weights(result, nr_of_individual, in_keys, pos):
     '''sum calculated input based on environment with neurons containing input
     result- list of creatures
@@ -350,7 +352,8 @@ def sum_input_weights(result, nr_of_individual, in_keys, pos):
                 result[nr_of_individual]['brain'][neuron][2] += in_weight[1]
                 
     return result 
-    
+  
+## from 'steps_in_generation'  
 def apply_input(result, nr_of_individual):
     '''apply input regarding position of other individuals'''
 
@@ -377,7 +380,8 @@ def apply_input(result, nr_of_individual):
     
     result[nr_of_individual]['brain_after_pruning'] = edges
     result[nr_of_individual]['out'] = mid_dic
-    
+  
+## from 'steps_in_generation'   
 def prevent_overlap_movement(last_pos_list, result):
     '''check if last position of each individual ovrlap with another. If yes then last posotion is switched to last but one. 
     last_pos_list - dictionary of individuals kesy and last position
@@ -404,7 +408,8 @@ def prevent_overlap_movement(last_pos_list, result):
                     list_of_resuls.append(1)
                 else:
                     list_of_resuls.append([[key_1, key_2]])
-                
+ 
+## from 'steps_in_generation' 
 def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
     position_list = []
     for out in result[indiv]['out']:
@@ -448,17 +453,7 @@ def mutation(binary_gene, weight=0.001):
     
   
 ## visualisation
- 
-def update(i):
-    ax.clear()
-    ax.set_facecolor(plt.cm.Blues(.2))
-
-    ax.set_xlim([0,world_size_x])
-    ax.set_ylim([0,world_size_y])
-    ax.set_title('moving')
-    ax.scatter(x=coords[i]['x'],y=coords[i]['y'], c='red', s=2, marker='o')
-    [spine.set_visible(False) for spine in ax.spines.values()]
-    
+  
 def hex_to_rgb(hex_value):
 #     h = hex_value.lstrip('#')
     return tuple(int(hex_value[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
@@ -490,6 +485,7 @@ def initial_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, 
     pos = generate_random_coords(world_size, nr_individuals)
     assign_position_and_remove_outputless_brains(result, pos)
     return result
+
 
 def steps_in_generation(world_size, result, world_size_x, world_size_y):
     n = 0
@@ -544,9 +540,7 @@ def asexual_reproduction_and_mutation(world_size, result, nr_individuals):
         genome_mutation(survivors[key]['genome'])
     
     return survivors
-
-
-   
+ 
 def next_generation(survivors, nr_of_input, nr_of_actions, nr_of_inner, world_size, nr_individuals):
     dic = {}
     for nr_idividual in survivors:
