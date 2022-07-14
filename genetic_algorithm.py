@@ -71,8 +71,8 @@ def move(key, weight):
     elif 'out3' in key:
         return [int(-factor_1), 0]
     elif 'out4' in key:
-        factor_2 = np.random.choice(2, 1, p=[weight, 1-weight])
-        return [int(-factor_1), int(-factor_2)]
+        x,y = np.random.choice(2, 2)
+        return [x,y]
 
 # decode hexadecimal
 
@@ -411,10 +411,11 @@ def prevent_overlap_movement(last_pos_list, result):
  
 ## from 'steps_in_generation' 
 def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
-    position_list = []
-    for out in result[indiv]['out']:
-        new_pos = move(out, result[indiv]['out'][out])
-        position_list.append(new_pos)
+    out_weight = result[indiv]['out']
+    position_list = (move(out, out_weight[out]) for out in out_weight)
+    # :
+        # new_pos = 
+        # position_list.append(new_pos)
     
     if position_list:
         position_list = list(map(sum, zip(*position_list)))
@@ -491,9 +492,13 @@ def steps_in_generation(world_size, result, world_size_x, world_size_y):
     n = 0
     pbar = tqdm(total=world_size, initial=n)
 
-    while world_size>n: 
-        pos_list = [tuple(result[obj]['position'][-1]) for obj in result]
-        res = list(set([ele for ele in pos_list if pos_list.count(ele) > 1]))
+    while world_size>n:
+        # print(n)
+        # pos_list = [tuple(result[obj]['position'][-1]) for obj in result]
+        # res = list(set([ele for ele in pos_list if pos_list.count(ele) > 1]))
+        # print('res')
+        # print(res)
+        # print()
         pbar.update(1)
         
         for indiv in result:
