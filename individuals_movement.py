@@ -161,10 +161,10 @@ def input_neuron(key, pos, result):
 def check_overlap(result, x, y):
     for indiv in result:
         if [x, y] == result[indiv]['position'][-1]:
-            input = 1
+            factor = 1
         else:
-            input = 0
-        return input
+            factor = 0
+        return factor
 
 ################### stop ###################
 
