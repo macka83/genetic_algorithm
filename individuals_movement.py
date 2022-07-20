@@ -132,8 +132,7 @@ def input_neuron(key, pos, result):
         tot_position - all individual last position '''
     if pos[-2] != pos[-1]:
         x1, y1, x2, y2 = pos[-2][0], pos[-2][1], pos[-1][0], pos[-1][1]
-        dx = x2-x1
-        dy = y2-y1
+        dx, dy = x2-x1, y2-y1
         x3, y3 = x2+dx, y2+dy
         
         if 'in0' in key:
