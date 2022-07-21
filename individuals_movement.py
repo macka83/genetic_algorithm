@@ -6,7 +6,12 @@ import copy
 from tqdm import tqdm
 from common_functions import *
 
-def steps_in_generation(world_size, result, world_size_x, world_size_y):
+def steps_in_generation(steps_per_generation=world_size, result, world_size_x, world_size_y):
+    '''calculate steps of each generation including factors came from initial neurons
+    steps_per_generation = number of stpes of each individuals. default - world_size
+    result = dictionary with individuals parameters
+    world_size_x and world_size_y = in this version equals world_size
+    '''
     n = 0
     pbar = tqdm(total=world_size, initial=n)
 
@@ -15,6 +20,7 @@ def steps_in_generation(world_size, result, world_size_x, world_size_y):
         pbar.update(1)
         
         for indiv in result:
+            # last position of each individual
             x, y = result[indiv]['position'][-1][0], result[indiv]['position'][-1][1]
             if n<1:
                 calculate_position(result, indiv, x, y, world_size_x, world_size_y)    
