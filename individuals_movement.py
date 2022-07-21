@@ -6,31 +6,31 @@ import copy
 from tqdm import tqdm
 from common_functions import *
 
-def steps_in_generation(steps_per_generation=world_size, result, world_size_x, world_size_y):
+def steps_in_generation(movement_count: int, result: dict, world_size_x: int, world_size_y: int):
     '''calculate steps of each generation including factors came from initial neurons
-    steps_per_generation = number of stpes of each individuals. default - world_size
-    result = dictionary with individuals parameters
+    movement_count = number of stpes of each individuals. default - world_size
+    result = dictionary with individuals' parameters
     world_size_x and world_size_y = in this version equals world_size
     '''
-    n = 0
-    pbar = tqdm(total=world_size, initial=n)
+    move = 0
+    pbar = tqdm(total=movement_count, initial=move)
 
-    while world_size>n:
+    while movement_count > move:
 
         pbar.update(1)
         
         for indiv in result:
             # last position of each individual
             x, y = result[indiv]['position'][-1][0], result[indiv]['position'][-1][1]
-            if n<1:
+            if move < 1:
                 calculate_position(result, indiv, x, y, world_size_x, world_size_y)    
-            elif n >= 1:
+            elif move >= 1:
                 apply_input(result, indiv)
                 calculate_position(result, indiv, x, y, world_size_x, world_size_y)
                 
         last_pos_list = {obj:result[obj]['position'][-1] for obj in result}
         prevent_overlap_movement(last_pos_list, result)
-        n += 1
+        move += 1
     pbar.close()
     return result
 
@@ -95,8 +95,10 @@ def apply_input(result, nr_of_individual):
     result = sum_input_weights(result, nr_of_individual, in_keys, pos)
 
     edges = result[nr_of_individual]['brain']
-    edges = [tuple(edges[i]) for i in edges]
-    remove_mid_with_no_predecessor(edges)
+    # print(edges)
+    # edges = (tuple(edges[i]) for i in edges)
+    set_neurons = set(i[1] for i in edges.values())
+    remove_mid_with_no_predecessor(edges, set_neurons)
 
     mid_dic = {}
     for item in edges:
