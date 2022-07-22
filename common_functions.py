@@ -14,6 +14,7 @@ def remove_mid_with_no_predecessor(edges, set_neurons):
         if 'mid' in val[0] and val[0] not in set_neurons:
             del edges[key]
             remove_mid_with_no_predecessor(edges, set_neurons)
+
                        
 def sum_weights(dic, input_list):
     '''input: dic - dictionary of 'mid' and 'out' neurons with predecessors
