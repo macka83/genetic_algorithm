@@ -182,15 +182,11 @@ def calculate_individual_output_weights(individuals):
         # remove_mid_with_no_predecessor(edges)
         set_neurons = set(i[1] for i in edges.values())
         remove_mid_with_no_predecessor(edges, set_neurons)
-        init_list = list(set([i[0] for i in edges if 'in' in i[0]]))
+        init_list = set([i[0] for i in edges.values() if 'in' in i[0]])
 
         mid_dic = {}
 
-        for item in edges:
-            if item[1] in mid_dic:
-                mid_dic[item[1]].update({item[0]: item[2]})
-            else:
-                mid_dic[item[1]] = {item[0]: item[2]}
+        populate_dictionary(edges, mid_dic)
         
         if mid_dic:
             sum_weights(mid_dic, init_list)

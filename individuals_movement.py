@@ -101,11 +101,7 @@ def apply_input(result, nr_of_individual):
     remove_mid_with_no_predecessor(edges, set_neurons)
 
     mid_dic = {}
-    for item in edges:
-        if item[1] in mid_dic:
-            mid_dic[item[1]].update({item[0]: item[2]})
-        else:
-            mid_dic[item[1]] = {item[0]: item[2]}
+    populate_dictionary(edges, mid_dic)
     
     sum_weights(mid_dic, in_keys)
 

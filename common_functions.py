@@ -49,3 +49,13 @@ def remove_mid_from_dict(dic):
     mid_list = [i for i in dic if 'mid' in i]
     for mid in mid_list:
         dic.pop(mid)   
+        
+def populate_dictionary(edges, dic):
+    '''generate dictionary where keys are outputs: out, mid and values are distionaries of in , mid and their weights
+    edges- dict with edges
+    dic- empty dictionary'''
+    for item in edges.values():
+        if item[1] in dic:
+            dic[item[1]].update({item[0]: item[2]})
+        else:
+            dic[item[1]] = {item[0]: item[2]}
