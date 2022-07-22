@@ -125,19 +125,21 @@ def sum_duplicated_neurons(res):
             n_output = f'{i.output_type}{i.output_id}'
             n_input = f'{i.input_type}{i.input_id}'
             dic[nr][i.differ_neuron] = [n_input, n_output, total]
-    return dic
+    yield dic
+
+
 
 def remove_self_loop(dic):
-    '''remove randomlypicked self looped ie: Amid->Bmid or Bmid->Amid'''
+    '''remove randomly picked self looped ie: Amid->Bmid or Bmid->Amid'''
     for nr in dic:
         list_of_dup = []
-        for key_1 in dic[nr]:
-            for key_2 in dic[nr]:
+        for key_1 in dic:
+            for key_2 in dic:
                 if key_1 != key_2 and sorted(key_1) == sorted(key_2):
                     list_of_dup.append(sorted([key_1, key_2]))
                     
         list_of_dup.sort()
-        list_of_dup = list(list_of_dup for list_of_dup,_ in groupby(list_of_dup))
+        list_of_dup = (list_of_dup for list_of_dup,_ in groupby(list_of_dup))
         for i in list_of_dup:
             rand_int = random.randint(0, 1)
             del dic[nr][i[rand_int]]
@@ -167,7 +169,6 @@ def mid_neuron(brain, edges):
            
 ## calculate paths in-mid-out and weights
 
-
 def calculate_individual_output_weights(individuals):
     dic = {}
     ## sum duplicates
@@ -177,18 +178,19 @@ def calculate_individual_output_weights(individuals):
     for individual in individuals_sum_dup_no_self_loop:
 
         ## preprocessing
-        edges = individuals_sum_dup_no_self_loop[individual]
+        edges = individuals_sum_dup_no_self_loop[individual].values()
         # edges = [tuple(edges[i]) for i in edges]
         # remove_mid_with_no_predecessor(edges)
-        set_neurons = set(i[1] for i in edges.values())
+        set_neurons = set(i[1] for i in edges)
         remove_mid_with_no_predecessor(edges, set_neurons)
-        init_list = list(set([i[0] for i in edges.values() if 'in' in i[0]]))
+        init_list = list(set([i[0] for i in edges if 'in' in i[0]]))
 
         mid_dic = {}
 
         populate_dictionary(edges, mid_dic)
         
         if mid_dic:
+        
             sum_weights(mid_dic, init_list)
             remove_mid_from_dict(mid_dic)
         
@@ -265,12 +267,12 @@ def initial_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, 
    
 def select_individuals_from_safezone(world_size, result):
     '''select individuals from safe zone and renumerate'''
-    safe_zone = int(world_size * 0.6)
+    safe_zone = int(world_size * 0.7)
     n=0
     survivors = {}
     for key in result:
-        x = result[key]['position'][-1][0]
-        if x > safe_zone:
+        y = result[key]['position'][-1][1]
+        if y > safe_zone:
             survivors[n] = {'genome':[]}
             survivors[n]['genome'] = result[key]['genome']
             n+=1

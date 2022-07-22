@@ -1,5 +1,5 @@
 import numpy as np
-
+import copy
 # def remove_mid_with_no_predecessor(edges):
     # '''remove mid neuron if no predecessor'''
     # set_neurons = set(i[1] for i in edges)
@@ -10,12 +10,11 @@ import numpy as np
             
 def remove_mid_with_no_predecessor(edges, set_neurons):
     '''remove mid neuron if no predecessor'''
-    for key, val in edges.items():
+    for val_nr, val in enumerate(edges):
         if 'mid' in val[0] and val[0] not in set_neurons:
-            del edges[key]
+            del edges[val_nr]
             remove_mid_with_no_predecessor(edges, set_neurons)
 
-                       
 def sum_weights(dic, input_list):
     '''input: dic - dictionary of 'mid' and 'out' neurons with predecessors
         ex.{0: {'out1': {'mid0': -2.8534106516099498, 'mid1': -0.6730352510300626},
