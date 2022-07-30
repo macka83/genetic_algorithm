@@ -25,8 +25,7 @@ Here I'll only highlight changes, obstacles and things to do
         + output4 - random movement 
 2) in this experiment only asexual reproduction and punctual mutation are implemented
 
-Script is working and is easy to run, but there are still a lot things to change/ fix
-
+TODO:
 1) improve main loop performance and increase ability to process larger population
 2) small population which might give biased result in compariosn to larger population
 3) add sexual reproducion
