@@ -5,11 +5,11 @@ https://github.com/davidrmiller/biosim4
 
 
 -------------------
-requirements
-Python 3.9.12
-conda 4.13.0
+requirements  
+Python 3.9.12  
+conda 4.13.0  
 
-Presented framework is my interpretation of biosim4 prepared by David R Miller and most of assumption come from his work. Here I'll only mention general rules Great explanation is provided by D.R. Miller's video https://www.youtube.com/watch?v=N3tRFayqVtk. 
+Presented framework is my interpretation of biosim4 prepared by David R Miller and most of assumption come from his work. Here I'll only mention general rules. Great explanation is provided by D.R. Miller's video https://www.youtube.com/watch?v=N3tRFayqVtk. 
 
 Here I'll only highlight changes, obstacles and things to do
 
@@ -22,13 +22,16 @@ Here I'll only highlight changes, obstacles and things to do
         + output1 - south  
         + output2 - east  
         + output3 - west  
-        + output4 - randomly 
+        + output4 - random movement 
 2) in this experiment only asexual reproduction and punctual mutation are implemented
 
 Script is working and is easy to run, but there are still a lot things to change/ fix
 
-1) improve main loop performance
-2) add sexual 
+1) improve main loop performance and increase ability to process larger population
+2) small population which might give biased result in compariosn to larger population
+3) add sexual reproducion
+4) check if mutation works fine
+
 
 
 
