@@ -9,7 +9,7 @@ requirements
 Python 3.9.12  
 conda 4.13.0  
 
-Presented framework is my interpretation of biosim4 prepared by David R Miller and most of assumption come from his work. Here I'll only mention general rules. Great explanation is provided by D.R. Miller's video https://www.youtube.com/watch?v=N3tRFayqVtk. 
+Presented framework is my interpretation of biosim4 prepared by David R Miller and most of assumption come from his work. Great explanation is provided by D.R. Miller's video https://www.youtube.com/watch?v=N3tRFayqVtk. 
 
 Here I'll only highlight changes, obstacles and things to do
 
