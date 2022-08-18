@@ -26,7 +26,7 @@ Here I'll only highlight changes, obstacles and things to do
 2) in this experiment only asexual reproduction and punctual mutation are implemented
 
 TODO:
-1) improve main loop performance and increase ability to process larger population
+1) ~~improve main loop performance and increase ability to process larger population~~
 2) small population which might give biased result in compariosn to larger population
 3) add sexual reproducion
 4) check if mutation works fine
