@@ -26,13 +26,13 @@ Here I'll only highlight changes, obstacles and things to do
 2) in this experiment only asexual reproduction and punctual mutation are implemented
 
 TODO:
-1) ~~improve main loop performance and increase ability to process larger population~~ - increase speed by removing one recursive loop
+1) ~~improve main loop performance and increase ability to process larger population~~ - increase speed by replacing recursive loop prevent_overlap_movement() from steps_in_generation() with for loop
 2) add config file
 3) split code into smaller chunks
 4) add sexual reproducion
 5) early stopper
 6) summary statistic
-7) images to readme
+7) add images to readme
 
 CHECK
 1) if small population give biased result in comparison to larger population
