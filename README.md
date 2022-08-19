@@ -26,11 +26,15 @@ Here I'll only highlight changes, obstacles and things to do
 2) in this experiment only asexual reproduction and punctual mutation are implemented
 
 TODO:
-1) ~~improve main loop performance and increase ability to process larger population~~
-2) small population which might give biased result in compariosn to larger population
-3) add sexual reproducion
-4) check if mutation works fine
+1) ~~improve main loop performance and increase ability to process larger population~~ - increase speed by removing one recursive loop
+2) add config file
+3) split code into smaller chunks
+4) add sexual reproducion
+5) early stopper
+6) summary statistic
+7) images to readme
 
-
-
-
+CHECK
+1) if small population give biased result in comparison to larger population
+2) if mutation works fine
+3) why initial population move mostly north-east
