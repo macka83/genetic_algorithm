@@ -11,7 +11,9 @@ conda 4.13.0
 
 Presented framework is my interpretation of biosim4 prepared by David R Miller and most of assumption come from his work. Great explanation is provided by D.R. Miller's video https://www.youtube.com/watch?v=N3tRFayqVtk. 
 
-Here I'll only highlight changes, obstacles and things to do
+run execute_genetic_algorithm.ipynb to check the result
+
+Here I'll highlight changes, obstacles and things to do
 
 1) Creating initial population is almost the same as original except input and output neurons number to simplify calculations.
     * input neurons sensitive to  
