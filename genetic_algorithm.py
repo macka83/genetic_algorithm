@@ -325,7 +325,7 @@ def make_smaller_(l):
 def genome_mutation(genome):
     for gene_nr, gene in enumerate(genome):
         binary_gene = hexval_to_bin(gene)
-        binary_mutated = mutation(binary_gene, weight=0.0001)
+        binary_mutated = mutation(binary_gene, weight=0.00001)
         if binary_mutated != binary_gene:
             genome[gene_nr] = hex(int(binary_mutated, 2))[2:]
 
