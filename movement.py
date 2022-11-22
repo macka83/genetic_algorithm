@@ -97,7 +97,7 @@ def apply_input(result, nr_of_individual):
 
  
 ## from 'steps_in_generation' 
-def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
+def calculate_position(result, indiv, x, y, world_size):
 
     position_list = (move(out, result[indiv]['out'][out]) for out in result[indiv]['out'])
 
@@ -105,8 +105,8 @@ def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
         position_list = make_smaller_(list(map(sum, zip(*position_list))))
         position_list = list(map(sum, zip(*[[x, y]] + [position_list])))
 
-        position_list[0] = normalize_position_if_outside_world(position_list[0], world_size_x)
-        position_list[1] = normalize_position_if_outside_world(position_list[1], world_size_y)
+        position_list[0] = normalize_position_if_outside_world(position_list[0], world_size)
+        position_list[1] = normalize_position_if_outside_world(position_list[1], world_size)
 
         result[indiv]['position'].append(position_list)
         
