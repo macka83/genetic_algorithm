@@ -97,7 +97,7 @@ def apply_input(result, nr_of_individual):
 
  
 ## from 'steps_in_generation' 
-def calculate_position(result, indiv, x, y, world_size):
+def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
 
     position_list = (move(out, result[indiv]['out'][out]) for out in result[indiv]['out'])
 
