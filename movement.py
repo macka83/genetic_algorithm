@@ -5,12 +5,12 @@ import time
 
 def steps_in_generation(world_size, result, world_size_x, world_size_y):
     n = 0
-    pbar = tqdm(total=world_size, initial=n)
+    # pbar = tqdm(total=world_size, initial=n)
 
-    while world_size>n:
+    for  world_size>n:
 
-        pbar.update(1)
-        
+        # pbar.update(1)
+        s0 = time.time()
         for indiv in result:
             x, y = result[indiv]['position'][-1][0], result[indiv]['position'][-1][1]
             if n<1:
@@ -36,11 +36,20 @@ def steps_in_generation(world_size, result, world_size_x, world_size_y):
             for prev in sorted(result.keys()): 
                 if prev != indiv and result[prev]['position'][-1] == result[indiv]['position'][-1]:
                     result[indiv]['position'][-1] = result[indiv]['position'][-2]
+                    
+            # result_copy = result.copy() 
+            # del result_copy[indiv]
+            # if {tuple(result_copy[indiv]['position'][-1]) for indiv in result_copy}&{tuple(result[indiv]['position'][-1])}:
+                # result[indiv]['position'][-1] = result[indiv]['position'][-2]
+    
             end_4 = time.time()
         n += 1
-    pbar.close()
-    return result, end_1-start_1, end_2-start_2, end_3-start_3, end_4-start_4, 
-    
+        e0 = time.time()
+    # pbar.close()
+    return result, end_1-start_1, end_2-start_2, end_3-start_3, end_4-start_4, e0-s0
+   
+
+   
   
 ## from 'steps_in_generation'  
 def sum_input_weights(result, nr_of_individual, in_keys, pos):
