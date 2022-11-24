@@ -7,7 +7,7 @@ def steps_in_generation(world_size, result, world_size_x, world_size_y):
     n = 0
     # pbar = tqdm(total=world_size, initial=n)
 
-    for  world_size>n:
+    while  world_size>n:
 
         # pbar.update(1)
         s0 = time.time()
@@ -46,7 +46,7 @@ def steps_in_generation(world_size, result, world_size_x, world_size_y):
         n += 1
         e0 = time.time()
     # pbar.close()
-    return result, end_1-start_1, end_2-start_2, end_3-start_3, end_4-start_4, e0-s0
+    yield result, end_1-start_1, end_2-start_2, end_3-start_3, end_4-start_4, e0-s0
    
 
    
