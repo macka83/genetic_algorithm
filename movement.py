@@ -3,35 +3,26 @@ import numpy as np
 import copy
 import time
 
-def steps_in_generation(world_size, result, world_size_x, world_size_y):
+def steps_in_generation(max_steps: int, result: dict, world_size_x: int, world_size_y: int):
     n = 0
-    # pbar = tqdm(total=world_size, initial=n)
-
-    while  world_size>n:
-
-        # pbar.update(1)
-        s0 = time.time()
+    while  max_steps>n:
+        # s0 = time.time()
         for indiv in result:
             x, y = result[indiv]['position'][-1][0], result[indiv]['position'][-1][1]
             if n<1:
-            
-                start_1 = time.time()
+                # start_1 = time.time()
                 calculate_position(result, indiv, x, y, world_size_x, world_size_y)
-                end_1 = time.time()
+                # end_1 = time.time()
                 
             elif n >= 1:
-            
-                start_2 = time.time()
+                # start_2 = time.time()
                 apply_input(result, indiv)
-                end_2 = time.time()
-                
-                start_3 = time.time()
+                # end_2 = time.time()
+                # start_3 = time.time()
                 calculate_position(result, indiv, x, y, world_size_x, world_size_y)
-                end_3 = time.time()
-                
+                # end_3 = time.time()
         # last_pos_list = {obj:result[obj]['position'][-1] for obj in result}
-        
-            start_4 = time.time()
+            # start_4 = time.time()
             # prevent_overlap_movement(last_pos_list, result)
             for prev in sorted(result.keys()): 
                 if prev != indiv and result[prev]['position'][-1] == result[indiv]['position'][-1]:
@@ -42,9 +33,9 @@ def steps_in_generation(world_size, result, world_size_x, world_size_y):
             # if {tuple(result_copy[indiv]['position'][-1]) for indiv in result_copy}&{tuple(result[indiv]['position'][-1])}:
                 # result[indiv]['position'][-1] = result[indiv]['position'][-2]
     
-            end_4 = time.time()
+            # end_4 = time.time()
         n += 1
-        e0 = time.time()
+        # e0 = time.time()
     # pbar.close()
     yield result, end_1-start_1, end_2-start_2, end_3-start_3, end_4-start_4, e0-s0
    
