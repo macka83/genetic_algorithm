@@ -17,7 +17,7 @@ from tqdm import tqdm
 # # Bliska przeszkoda
 
 
-def check_overlap(result, x, y):
+def check_overlap(result: dict, x: int, y: int):
     for indiv in result:
         if [x, y] == result[indiv]["position"][-1]:
             input = 1
@@ -26,7 +26,7 @@ def check_overlap(result, x, y):
         return input
 
 
-def input_neuron(key, pos, result):
+def input_neuron(key: str, pos: str, result: dict):
     """key - input name
     pos - list of individual position
     tot_position - all individual last position"""
