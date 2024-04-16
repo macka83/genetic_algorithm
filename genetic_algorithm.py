@@ -65,7 +65,7 @@ def input_neuron(key: str, pos: str, result: dict):
 
 
 ## TODO check if 'out4' is properly executed
-def move(key, weight):
+def move(key: str, weight: float):
     factor_1 = np.random.choice(2, 1, p=[weight, 1 - weight])
     if "out0" in key:
         return [0, int(factor_1)]
