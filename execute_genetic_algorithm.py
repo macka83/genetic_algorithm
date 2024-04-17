@@ -37,7 +37,7 @@ for gen_nr in range(10):
     print(gen_nr)
     if gen_nr == 0:
         result = initial_population(nr_individuals:int, nr_of_genes:int, nr_of_input:int, nr_of_actions:int, nr_of_inner:int, world_size:int)
-        result = steps_in_generation(world_size*2, result, world_size_x, world_size_y)
+        result = steps_in_generation(world_size*2:int, result:dict, world_size_x:int, world_size_y:int)
 #         print(result[0])
     else:
         

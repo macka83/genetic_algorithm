@@ -531,7 +531,7 @@ def hex_to_rgb(hex_value):
     return tuple(int(hex_value[i : i + 2], 16) / 255.0 for i in (0, 2, 4))
 
 
-def generate_dictionary_of_coords(result, list_length, dic_color):
+def generate_dictionary_of_coords(result: dict, list_length: int, dic_color: dict):
     """generate list of x and y dictionary, from each individuals' steps"""
     coords = [{"x": [], "y": [], "color": []} for key in range(list_length + 1)]
     for indiv in result:
@@ -546,7 +546,12 @@ def generate_dictionary_of_coords(result, list_length, dic_color):
 
 
 def initial_population(
-    nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner, world_size
+    nr_individuals: int,
+    nr_of_genes: int,
+    nr_of_input: int,
+    nr_of_actions: int,
+    nr_of_inner: int,
+    world_size,
 ):
     """generates list of individuals with genome and brain"""
     individuals = generate_initial_genomes_for_population(
@@ -566,7 +571,9 @@ def initial_population(
     return result
 
 
-def steps_in_generation(world_size, result, world_size_x, world_size_y):
+def steps_in_generation(
+    world_size: int, result: dict, world_size_x: int, world_size_y: int
+):
     n = 0
     pbar = tqdm(total=world_size, initial=n)
 
@@ -594,7 +601,7 @@ def steps_in_generation(world_size, result, world_size_x, world_size_y):
     return result
 
 
-def select_individuals_from_safezone(world_size, result):
+def select_individuals_from_safezone(world_size: int, result: dict):
     """select individuals from safe zone and renumerate"""
     safe_zone = int(world_size * 0.6)
     n = 0
