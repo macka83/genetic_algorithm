@@ -31,11 +31,10 @@ class Individual:
         self.y = y
 
 
-from secrets import token_hex
-
-
 class Brain:
-    def __init__(self, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner):
+    def __init__(
+        self, nr_of_genes: int, nr_of_input: int, nr_of_actions: int, nr_of_inner: int
+    ):
         """
         Initialize the Brain class with specified parameters.
 
@@ -60,7 +59,7 @@ class Brain:
         hexa_list = [token_hex(4) for _ in range(self.nr_of_genes)]
         return self.gene_to_neuron(hexa_list)
 
-    def gene_to_neuron(self, hexa_list):
+    def gene_to_neuron(self, hexa_list: list) -> list:
         """
         Translate genes to neurons.
 
@@ -71,13 +70,13 @@ class Brain:
             list: List of translated neurons.
         """
         gene_translated = []
-        for hex_id in hexa_list:
-            gen_component = self.split_genome(hex_id)
-            neuron = self.get_neurons_body(gen_component)
+        for hexval in hexa_list:
+            gen_component = self.split_genome(hexval)
+            neuron = self.get_neurons_body(hexval, gen_component)
             gene_translated.append(neuron)
         return gene_translated
 
-    def split_genome(self, hexval):
+    def split_genome(self, hexval: str) -> dict:
         """
         Split a hexadecimal genome into components.
 
@@ -88,26 +87,20 @@ class Brain:
             dict: Dictionary containing gene components.
         """
         binary = self.hexval_to_bin(hexval)
-        keys = [
-            "source_type",
-            "source_id",
-            "sink_type",
-            "sink_id",
-            "weight_sign",
-            "weight",
-        ]
-        values = [
-            binary[0],
-            binary[1:8],
-            binary[8],
-            binary[9:16],
-            binary[16],
-            binary[17:],
-        ]
-        gene_value_list = {key: int(val, 2) for key, val in zip(keys, values)}
+
+        bin_rep = {
+            "source_type": binary[0],
+            "source_id": binary[1:8],
+            "sink_type": binary[8],
+            "sink_id": binary[9:16],
+            "weight_sign": binary[16],
+            "weight": binary[17:],
+        }
+
+        gene_value_list = {key: int(val, 2) for key, val in bin_rep.items()}
         return gene_value_list
 
-    def hexval_to_bin(self, gene):
+    def hexval_to_bin(self, gene: str) -> str:
         """
         Convert a hexadecimal gene to binary.
 
@@ -123,7 +116,7 @@ class Brain:
             binary = "0" * factor + binary
         return binary
 
-    def get_neurons_body(self, gen_component):
+    def get_neurons_body(self, hexval: str, gen_component: dict) -> tuple:
         """
         Create neuron information based on gene components.
 
@@ -148,7 +141,15 @@ class Brain:
 
         differ_neuron = f"{input_type}{input_id}{output_type}{output_id}"
 
-        return input_id, input_type, weight, output_id, output_type, differ_neuron
+        return (
+            hexval,
+            input_id,
+            input_type,
+            weight,
+            output_id,
+            output_type,
+            differ_neuron,
+        )
 
 
 class Neuron:
@@ -171,8 +172,42 @@ class Neuron:
         self.differ_neuron = differ_neuron
 
 
-class population:
-    pass
+class Population:
+    def __init__(self, world_size, nr_individuals):
+        self.world_size = world_size
+        self.nr_individuals = nr_individuals
+
+    def generate_random_coords(self):
+        """
+        Generates random coordinates for individuals within the specified world size.
+
+        Args:
+            self.world_size (int): The size of the world (assumed to be square).
+
+        Returns:
+            np.ndarray: An array of randomly selected coordinates for individuals.
+        """
+        coord_full_list = np.array(list(product(range(self.world_size), repeat=2)))
+        ind = np.random.choice(len(coord_full_list), self.nr_individuals, replace=False)
+        pos = coord_full_list[ind]
+        return pos
+
+    def assign_position_and_remove_outputless_brains(self, result: dict, pos: list):
+        """
+        Assigns positions to individuals and removes those with no output.
+
+        Args:
+            result (dict): A dictionary containing individual information.
+            pos (list): List of positions for individuals.
+
+        Returns:
+            None: The function modifies the 'result' dictionary in-place.
+        """
+        indiv_to_del = (indiv for indiv in result if not result[indiv]["out"])
+        for key in indiv_to_del:
+            del result[key]
+        for indiv in result:
+            result[indiv]["position"] = [list(pos[indiv])]
 
 
 def check_overlap(result: dict, x: int, y: int) -> int:
@@ -204,10 +239,8 @@ def input_neuron(key: str, pos: str, result: dict):
                 factor = check_overlap(result, x2 + dx, y2 + dy)
                 if factor == 0:
                     return key, 0
-                    break
                 else:
                     return key, i / 5
-                    break
 
     else:
         return key, 0
@@ -233,13 +266,6 @@ def move(key: str, weight: float):
         return [x, y]
 
 
-class Creature:
-    def __init__(self, brain, x, y):
-        self.brain = brain
-        self.x = x
-        self.y = y
-
-
 class Neuron:
     def __init__(
         self,
@@ -260,27 +286,9 @@ class Neuron:
         self.differ_neuron = differ_neuron
 
 
-## position generator
+class brain_to_action:
 
-
-def generate_random_coords(world_size, nr_individuals):
-    """TODo if world_size_x != world_size_y fit then limit coord_full_list"""
-    coord_full_list = np.array(list(product(range(world_size), repeat=2)))
-    ind = np.random.choice(len(coord_full_list), nr_individuals, replace=False)
-    pos = coord_full_list[ind]
-    return pos
-
-
-def assign_position_and_remove_outputless_brains(result, pos):
-    indiv_to_del = []
-    for indiv in result:
-        if result[indiv]["out"]:
-            result[indiv]["position"] = [list(pos[indiv])]
-        else:
-            indiv_to_del.append(indiv)
-
-    for key in indiv_to_del:
-        del result[key]
+    pass
 
 
 # brain generator
@@ -635,12 +643,7 @@ def steps_in_generation(
     pbar = tqdm(total=world_size, initial=n)
 
     while world_size > n:
-        # print(n)
-        # pos_list = [tuple(result[obj]['position'][-1]) for obj in result]
-        # res = list(set([ele for ele in pos_list if pos_list.count(ele) > 1]))
-        # print('res')
-        # print(res)
-        # print()
+
         pbar.update(1)
 
         for indiv in result:
