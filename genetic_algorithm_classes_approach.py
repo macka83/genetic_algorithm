@@ -17,13 +17,166 @@ from tqdm import tqdm
 # # Bliska przeszkoda
 
 
-def check_overlap(result: dict, x: int, y: int):
-    for indiv in result:
-        if [x, y] == result[indiv]["position"][-1]:
-            input = 1
-        else:
-            input = 0
-        return input
+# def check_overlap(result: dict, x: int, y: int):
+#     for indiv in result:
+#         if [x, y] == result[indiv]["position"][-1]:
+#             input = 1
+#         else:
+#             input = 0
+#         return input
+class Individual:
+    def __init__(self, brain, x, y):
+        self.brain = brain
+        self.x = x
+        self.y = y
+
+
+from secrets import token_hex
+
+
+class Brain:
+    def __init__(self, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner):
+        """
+        Initialize the Brain class with specified parameters.
+
+        Args:
+            nr_of_genes (int): Number of genes.
+            nr_of_input (int): Number of input neurons.
+            nr_of_actions (int): Number of output actions.
+            nr_of_inner (int): Number of inner neurons.
+        """
+        self.nr_of_genes = nr_of_genes
+        self.nr_of_input = nr_of_input
+        self.nr_of_actions = nr_of_actions
+        self.nr_of_inner = nr_of_inner
+
+    def generate_initial_genomes_for_population(self):
+        """
+        Generate initial genomes for the population.
+
+        Returns:
+            list: List of translated neurons.
+        """
+        hexa_list = [token_hex(4) for _ in range(self.nr_of_genes)]
+        return self.gene_to_neuron(hexa_list)
+
+    def gene_to_neuron(self, hexa_list):
+        """
+        Translate genes to neurons.
+
+        Args:
+            hexa_list (list): List of hexadecimal gene IDs.
+
+        Returns:
+            list: List of translated neurons.
+        """
+        gene_translated = []
+        for hex_id in hexa_list:
+            gen_component = self.split_genome(hex_id)
+            neuron = self.get_neurons_body(gen_component)
+            gene_translated.append(neuron)
+        return gene_translated
+
+    def split_genome(self, hexval):
+        """
+        Split a hexadecimal genome into components.
+
+        Args:
+            hexval (str): Hexadecimal value.
+
+        Returns:
+            dict: Dictionary containing gene components.
+        """
+        binary = self.hexval_to_bin(hexval)
+        keys = [
+            "source_type",
+            "source_id",
+            "sink_type",
+            "sink_id",
+            "weight_sign",
+            "weight",
+        ]
+        values = [
+            binary[0],
+            binary[1:8],
+            binary[8],
+            binary[9:16],
+            binary[16],
+            binary[17:],
+        ]
+        gene_value_list = {key: int(val, 2) for key, val in zip(keys, values)}
+        return gene_value_list
+
+    def hexval_to_bin(self, gene):
+        """
+        Convert a hexadecimal gene to binary.
+
+        Args:
+            gene (str): Hexadecimal gene value.
+
+        Returns:
+            str: Binary representation.
+        """
+        binary = bin(int(gene, 16))[2:]
+        if len(binary) <= 32:
+            factor = 32 - len(binary)
+            binary = "0" * factor + binary
+        return binary
+
+    def get_neurons_body(self, gen_component):
+        """
+        Create neuron information based on gene components.
+
+        Args:
+            gen_component (dict): Dictionary containing gene components.
+
+        Returns:
+            tuple: Neuron information (input_id, input_type, weight, output_id, output_type, differ_neuron).
+        """
+        input_id = gen_component["source_id"] % (
+            self.nr_of_input if gen_component["source_type"] == 0 else self.nr_of_inner
+        )
+        input_type = "in" if gen_component["source_type"] == 0 else "mid"
+
+        output_id = gen_component["sink_id"] % (
+            self.nr_of_inner if gen_component["sink_type"] == 0 else self.nr_of_actions
+        )
+        output_type = "mid" if gen_component["sink_type"] == 0 else "out"
+
+        weight_sign = -1 if gen_component["weight_sign"] == 0 else 1
+        weight = weight_sign * (gen_component["weight"] / 8191.25)
+
+        differ_neuron = f"{input_type}{input_id}{output_type}{output_id}"
+
+        return input_id, input_type, weight, output_id, output_type, differ_neuron
+
+
+class Neuron:
+    def __init__(
+        self,
+        hex_id,
+        input_id,
+        input_type,
+        weight,
+        output_id,
+        output_type,
+        differ_neuron,
+    ):
+        self.hex_id = hex_id
+        self.input_id = input_id
+        self.input_type = input_type
+        self.weight = weight
+        self.output_id = output_id
+        self.output_type = output_type
+        self.differ_neuron = differ_neuron
+
+
+class population:
+    pass
+
+
+def check_overlap(result: dict, x: int, y: int) -> int:
+    return any([x, y] == indiv_data["position"][-1] for indiv_data in result.values())
 
 
 def input_neuron(key: str, pos: str, result: dict):
@@ -78,97 +231,6 @@ def move(key: str, weight: float):
     elif "out4" in key:
         x, y = np.random.choice(2, 2)
         return [x, y]
-
-
-# decode hexadecimal
-
-
-def hexval_to_bin(gene):
-    binary = bin(int(gene, 16))[2:]
-    if len(binary) <= 32:
-        factor = 32 - len(binary)
-        binary = "0" * factor + binary
-        return binary
-
-
-def split_genome(hexval):
-
-    binary = hexval_to_bin(hexval)
-    source_type, source_id = binary[0], binary[1:8]
-    sink_type, sink_id = binary[8], binary[9:16]
-    weight_sign, weight = binary[16], binary[17:]
-
-    gene_value_list = {
-        key: int(val, 2)
-        for key, val in zip(
-            [
-                "source_type",
-                "source_id",
-                "sink_type",
-                "sink_id",
-                "weight_sign",
-                "weight",
-            ],
-            [source_type, source_id, sink_type, sink_id, weight_sign, weight],
-        )
-    }
-
-    return gene_value_list
-
-
-def get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions):
-    if gen_component["source_type"] == 0:
-        input_id = gen_component["source_id"] % nr_of_input
-        input_type = "in"
-    elif gen_component["source_type"] == 1:
-        input_id = gen_component["source_id"] % nr_of_inner
-        input_type = "mid"
-
-    if gen_component["sink_type"] == 0:
-        output_id = gen_component["sink_id"] % nr_of_inner
-        output_type = "mid"
-    elif gen_component["sink_type"] == 1:
-        output_id = gen_component["sink_id"] % nr_of_actions
-        output_type = "out"
-
-    if gen_component["weight_sign"] == 0:
-        weight = (gen_component["weight"] / 8191.25) * -1
-    elif gen_component["weight_sign"] == 1:
-        weight = gen_component["weight"] / 8191.25
-
-    differ_neuron = f"{input_type}{input_id}{output_type}{output_id}"
-
-    return input_id, input_type, weight, output_id, output_type, differ_neuron
-
-
-def gene_to_neuron(hexa_list, nr_of_input, nr_of_actions, nr_of_inner):
-    gene_translated = []
-    for l, hex_id in enumerate(hexa_list):
-        gen_component = split_genome(hex_id)
-
-        input_id, input_type, weight, output_id, output_type, differ_neuron = (
-            get_neurons_body(gen_component, nr_of_input, nr_of_inner, nr_of_actions)
-        )
-
-        l = Neuron(
-            hex_id, input_id, input_type, weight, output_id, output_type, differ_neuron
-        )
-        gene_translated.append(l)
-    return gene_translated
-
-
-def generate_initial_genomes_for_population(
-    nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner
-):
-    dic = {}
-    for nr_idividual in range(nr_individuals):
-
-        hexa_list = [token_hex(4) for i in range(nr_of_genes)]
-        dic[nr_idividual] = gene_to_neuron(
-            hexa_list, nr_of_input, nr_of_actions, nr_of_inner
-        )
-
-    return dic
 
 
 class Creature:
@@ -384,14 +446,9 @@ def normalize_position_if_outside_world(position, max_border):
     return position
 
 
-def make_smaller_(l):
-    """-2 to -1, 2 to 1"""
-    for i_nr, i in enumerate(l):
-        if i == -2:
-            l[i_nr] = -1
-        elif i == 2:
-            l[i_nr] = 1
-    return l
+def make_smaller(l):
+    """Convert -2 to -1 and 2 to 1."""
+    return [1 if i == 2 else -1 if i == -2 else i for i in l]
 
 
 ## from 'steps_in_generation'

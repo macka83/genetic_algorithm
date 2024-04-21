@@ -8,7 +8,8 @@ import binascii
 import matplotlib.pyplot as plt
 import math
 from matplotlib.animation import FuncAnimation
-%matplotlib notebook
+
+# %matplotlib notebook
 
 import copy
 from collections import Counter
@@ -36,48 +37,53 @@ result = {}
 for gen_nr in range(10):
     print(gen_nr)
     if gen_nr == 0:
-        result = initial_population(nr_individuals:int, nr_of_genes:int, nr_of_input:int, nr_of_actions:int, nr_of_inner:int, world_size:int)
-        result = steps_in_generation(world_size*2:int, result:dict, world_size_x:int, world_size_y:int)
-#         print(result[0])
+        result = initial_population(
+            nr_individuals,
+            nr_of_genes,
+            nr_of_input,
+            nr_of_actions,
+            nr_of_inner,
+            world_size,
+        )
+        result = steps_in_generation(world_size * 2, result, world_size_x, world_size_y)
+    #         print(result[0])
     else:
-        
+
         result = asexual_reproduction_and_mutation(world_size, result, nr_individuals)
-        
-        result = next_generation(result,nr_of_input, nr_of_actions, nr_of_inner, world_size, nr_individuals)
-        result = steps_in_generation(world_size*2, result, world_size_x, world_size_y)
+
+        result = next_generation(
+            result, nr_of_input, nr_of_actions, nr_of_inner, world_size, nr_individuals
+        )
+        result = steps_in_generation(world_size * 2, result, world_size_x, world_size_y)
 
     result.update(result)
-    
+
     dic_color = {}
     for indiv in result:
-        rgb_colors = list(map(hex_to_rgb, result[indiv]['genome']))
-        color = tuple(pd.DataFrame(rgb_colors).median()) 
+        rgb_colors = list(map(hex_to_rgb, result[indiv]["genome"]))
+        color = tuple(pd.DataFrame(rgb_colors).median())
         dic_color[indiv] = color
-        
-    coords = generate_dictionary_of_coords(result, world_size*2, dic_color)
-    
+
+    coords = generate_dictionary_of_coords(result, world_size * 2, dic_color)
+
     def update(i):
         ax.clear()
-        ax.set_facecolor(plt.cm.Blues(.2))
+        ax.set_facecolor(plt.cm.Blues(0.2))
 
-        ax.set_xlim([0,world_size_x])
-        ax.set_ylim([0,world_size_y])
-        ax.set_title('moving')
-        ax.scatter(x=coords[i]['x'],y=coords[i]['y'], c=coords[i]['color'], s=20, marker='o')
+        ax.set_xlim([0, world_size_x])
+        ax.set_ylim([0, world_size_y])
+        ax.set_title("moving")
+        ax.scatter(
+            x=coords[i]["x"], y=coords[i]["y"], c=coords[i]["color"], s=20, marker="o"
+        )
         [spine.set_visible(False) for spine in ax.spines.values()]
 
-
-    fig, ax = plt.subplots(figsize=(6,6))
+    fig, ax = plt.subplots(figsize=(6, 6))
     myAnimation = FuncAnimation(
-        fig = fig,
-        func = update,
-        frames = len(coords),
-        interval = 10, repeat=False
+        fig=fig, func=update, frames=len(coords), interval=10, repeat=False
     )
-    myAnimation.save(f'./output/generation-{gen_nr}.gif', writer='imagemagick' , fps=10)
-    # create a binary pickle file 
-    f = open(f'./output/generation-{gen_nr}.pkl',"wb")
-    pickle.dump(dict,f)
+    myAnimation.save(f"./output/generation-{gen_nr}.gif", writer="imagemagick", fps=10)
+    # create a binary pickle file
+    f = open(f"./output/generation-{gen_nr}.pkl", "wb")
+    pickle.dump(dict, f)
     f.close()
-
-
