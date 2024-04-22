@@ -17,13 +17,17 @@ from tqdm import tqdm
 # # Bliska przeszkoda
 
 
-def check_overlap(result: dict, x: int, y: int):
-    for indiv in result:
-        if [x, y] == result[indiv]["position"][-1]:
-            input = 1
-        else:
-            input = 0
-        return input
+# def check_overlap(result: dict, x: int, y: int):
+#     for indiv in result:
+#         if [x, y] == result[indiv]["position"][-1]:
+#             input = 1
+#         else:
+#             input = 0
+#         return input
+
+
+def check_overlap(result: dict, x: int, y: int) -> int:
+    return any([x, y] == indiv_data["position"][-1] for indiv_data in result.values())
 
 
 def input_neuron(key: str, pos: str, result: dict):
@@ -153,6 +157,7 @@ def gene_to_neuron(hexa_list, nr_of_input, nr_of_actions, nr_of_inner):
         l = Neuron(
             hex_id, input_id, input_type, weight, output_id, output_type, differ_neuron
         )
+
         gene_translated.append(l)
     return gene_translated
 

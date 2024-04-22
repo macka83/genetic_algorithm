@@ -31,7 +31,7 @@ class Individual:
         self.y = y
 
 
-class Brain:
+class BrainInitiation:
     def __init__(
         self, nr_of_genes: int, nr_of_input: int, nr_of_actions: int, nr_of_inner: int
     ):
@@ -49,7 +49,7 @@ class Brain:
         self.nr_of_actions = nr_of_actions
         self.nr_of_inner = nr_of_inner
 
-    def generate_initial_genomes_for_population(self):
+    def generate_initial_genomes_for_population(self) -> list:
         """
         Generate initial genomes for the population.
 
@@ -152,32 +152,12 @@ class Brain:
         )
 
 
-class Neuron:
-    def __init__(
-        self,
-        hex_id,
-        input_id,
-        input_type,
-        weight,
-        output_id,
-        output_type,
-        differ_neuron,
-    ):
-        self.hex_id = hex_id
-        self.input_id = input_id
-        self.input_type = input_type
-        self.weight = weight
-        self.output_id = output_id
-        self.output_type = output_type
-        self.differ_neuron = differ_neuron
-
-
 class Population:
     def __init__(self, world_size, nr_individuals):
         self.world_size = world_size
         self.nr_individuals = nr_individuals
 
-    def generate_random_coords(self):
+    def generate_random_coords(self) -> any:
         """
         Generates random coordinates for individuals within the specified world size.
 
@@ -294,35 +274,48 @@ class brain_to_action:
 # brain generator
 
 
-def sum_duplicated_neurons(res):
-    """sum duplicatd neurons and return bunch neurons dictionary"""
-    dic = {}
-    for nr in res:
-        dic[nr] = {}
-        for i in res[nr]:
-            total = dic.get(i.differ_neuron, 0) + i.weight
-            n_output = f"{i.output_type}{i.output_id}"
-            n_input = f"{i.input_type}{i.input_id}"
-            dic[nr][i.differ_neuron] = [n_input, n_output, total]
-    return dic
+class CalculateWeights:
 
+    def sum_duplicated_neurons(brain: list) -> dict:
+        """
+        Sum duplicated neurons and return a dictionary of grouped neurons.
 
-def remove_self_loop(dic):
-    """remove randomlypicked self looped ie: Amid->Bmid or Bmid->Amid"""
-    for nr in dic:
-        list_of_dup = []
-        for key_1 in dic[nr]:
-            for key_2 in dic[nr]:
-                if key_1 != key_2 and sorted(key_1) == sorted(key_2):
-                    list_of_dup.append(sorted([key_1, key_2]))
+        Args:
+            res (list): List of tuples representing neurons.
 
-        list_of_dup.sort()
-        list_of_dup = list(list_of_dup for list_of_dup, _ in groupby(list_of_dup))
-        for i in list_of_dup:
-            rand_int = random.randint(0, 1)
-            del dic[nr][i[rand_int]]
+        Returns:
+            dict: Dictionary containing grouped neurons.
+        """
+        brain_to_dict = {}
+        for item in brain:
+            (
+                hexval,
+                input_id,
+                input_type,
+                weight,
+                output_id,
+                output_type,
+                differ_neuron,
+            ) = item
+            total = brain_to_dict.get(differ_neuron, 0) + weight
+            n_output = f"{output_type}{output_id}"
+            n_input = f"{input_type}{input_id}"
+            brain_to_dict[differ_neuron] = [n_input, n_output, total]
+        return brain_to_dict
 
-    return dic
+    def remove_self_loop(brain_to_dict: dict) -> dict:
+        """
+        Remove randomly picked self-looped edges, e.g., Amid->Bmid or Bmid->Amid.
+        """
+        for nr in brain_to_dict:
+            keys = list(brain_to_dict[nr].keys())  # Extract keys once
+            for key_1 in keys:
+                for key_2 in keys:
+                    if key_1 != key_2 and sorted(key_1) == sorted(key_2):
+                        rand_int = random.randint(0, 1)
+                        del brain_to_dict[nr][keys[rand_int]]
+
+        return brain_to_dict
 
 
 def generate_brain_output_dictionary(edges):
@@ -433,14 +426,14 @@ def calculate_individual_output_weights(individuals):
             sum_weights(mid_dic, init_list)
             remove_mid_from_dict(mid_dic)
 
-            dic[individual] = {}
-            dic[individual]["out"] = {}
-            dic[individual]["brain"] = {}
-            dic[individual]["in"] = {}
-            dic[individual]["out"] = mid_dic
-            dic[individual]["brain"] = individuals_sum_dup_no_self_loop[individual]
-            dic[individual]["in"] = init_list
-
+            dic[individual] = {
+                "out": {},
+                "brain": {},
+                "in": {},
+                "out": mid_dic,
+                "brain": individuals_sum_dup_no_self_loop[individual],
+                "in": init_list,
+            }
     return dic
 
 
