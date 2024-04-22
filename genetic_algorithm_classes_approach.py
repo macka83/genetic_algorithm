@@ -6,7 +6,7 @@
 
 from secrets import token_hex
 import random
-from itertools import groupby, tee, product
+from itertools import combinations, product
 import numpy as np
 import copy
 from tqdm import tqdm
@@ -143,11 +143,9 @@ class BrainInitiation:
 
         return (
             hexval,
-            input_id,
-            input_type,
+            f"{input_type}{input_id}",
             weight,
-            output_id,
-            output_type,
+            f"{output_type}{output_id}",
             differ_neuron,
         )
 
@@ -190,6 +188,162 @@ class Population:
             result[indiv]["position"] = [list(pos[indiv])]
 
 
+# output
+# updated output neuron
+
+
+class Neuron:
+    def __init__(
+        self,
+        hex_id,
+        input_id,
+        input_type,
+        weight,
+        output_id,
+        output_type,
+        differ_neuron,
+    ):
+        self.hex_id = hex_id
+        self.input_id = input_id
+        self.input_type = input_type
+        self.weight = weight
+        self.output_id = output_id
+        self.output_type = output_type
+        self.differ_neuron = differ_neuron
+
+
+class brain_to_action:
+
+    pass
+
+
+# brain generator
+
+
+class CalculateWeights:
+
+    def __init__(self, brain: list):
+        self.brain = brain
+
+    def sum_duplicated_neurons(self) -> dict:
+        cumulative_sum_dict = {}
+
+        # Iterate through the list of sublists
+        for sublist in self.brain:
+            differ_neuron = sublist[-1]
+            weight = sublist[2]
+
+            # If the last item is not already in the dictionary, create a new entry
+            if differ_neuron not in cumulative_sum_dict:
+                cumulative_sum_dict[differ_neuron] = [
+                    f"{sublist[1]}",
+                    f"{sublist[-2]}",
+                    weight,
+                ]
+            else:
+                # Update the cumulative sum for the existing last item
+                cumulative_sum_dict[differ_neuron][2] += weight
+
+        return cumulative_sum_dict
+
+    def remove_self_loop(self, brain_to_dict: dict) -> dict:
+        """
+        Remove randomly picked self-looped edges, e.g., Amid->Bmid or Bmid->Amid.
+        """
+        keys = list(brain_to_dict.keys())  # Extract keys once
+        # print(keys)
+        key_combinat = combinations(keys, 2)
+        for key_pair in key_combinat:
+            if key_pair[0] != key_pair[1] and sorted(key_pair[0]) == sorted(
+                key_pair[1]
+            ):
+                rand_int = random.randint(0, 1)
+                del brain_to_dict[key_pair[rand_int]]
+
+        return brain_to_dict
+
+    def sum_weights(self, dic: dict, input_list: list) -> None:
+        """input: dic - dictionary of 'mid' and 'out' neurons with predecessors
+         ex.{0: {'out1': {'mid0': -2.8534106516099498, 'mid1': -0.6730352510300626},
+                 'mid1': {'in2': -1.9940790477643828, 'mid0': -3.1373721959407903,'mid1': -1.880543262627804},
+                 'out0': {'in2': 0.16151381046848773},
+                 'mid0': {'in1': 2.8191057530901875}},
+                 0 = nr of individual,
+        filter_list - list of inputs ex. ['in0', 'in2', 'in1']"""
+        for key in dic:
+            if "mid" in key and isinstance(dic[key], dict):
+                mid_to_update = set(dic[key]).difference(set(input_list + [key]))
+                k = 0
+                for mid_key in mid_to_update:
+                    if isinstance(dic[mid_key], float):
+                        dic[key][mid_key] = NormalizeData(
+                            np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+                        )
+                        k += 1
+                if k == len(mid_to_update):
+                    dic[key] = np.tanh(sum(dic[key].values()))
+                    sum_weights(dic, input_list)
+
+            elif "out" in key and isinstance(dic[key], dict):
+                for mid_key in dic[key]:
+                    if "mid" in mid_key and isinstance(dic[mid_key], float):
+                        dic[key][mid_key] = normalize_data(
+                            np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+                        )
+
+                dic[key] = self.normalize_data(np.tanh(sum(dic[key].values())))
+
+    def normalize_data(self, data: float) -> float:
+        return round((data + 1) / 2, 3)
+
+    def remove_mid_from_dict(self, dic: dict) -> None:
+        mid_list = [i for i in dic if "mid" in i]
+        for mid in mid_list:
+            dic.pop(mid)
+
+    def remove_mid_with_no_predecessor(self, edges: list) -> None:
+        """remove mid neuron if no predecessor"""
+        set_neurons = set(i[1] for i in edges)
+        for i_nr, i in enumerate(edges):
+            if "mid" in i[0] and i[0] not in set_neurons:
+                del edges[i_nr]
+                remove_mid_with_no_predecessor(edges)
+
+    def calculate_individual_output_weights(self) -> dict:
+        dic = {}
+        ## sum duplicates
+        unique_neurons = self.sum_duplicated_neurons()
+        no_selfloop_neurons = self.remove_self_loop(unique_neurons)
+        # print("individuals_sum_dup_no_self_loop", no_selfloop_neurons)
+        # for individual in individuals_sum_dup_no_self_loop:
+
+        #     ## preprocessing
+        #     edges = individuals_sum_dup_no_self_loop[individual]
+        edges = [tuple(no_selfloop_neurons[i]) for i in no_selfloop_neurons]
+        self.remove_mid_with_no_predecessor(edges)
+
+        init_list = list(set([i[0] for i in edges if "in" in i[0]]))
+
+        mid_dic = {}
+
+        for item in edges:
+            if item[1] in mid_dic:
+                mid_dic[item[1]].update({item[0]: item[2]})
+            else:
+                mid_dic[item[1]] = {item[0]: item[2]}
+
+        if mid_dic:
+            self.sum_weights(mid_dic, init_list)
+            self.remove_mid_from_dict(mid_dic)
+
+            dic = {
+                "out": mid_dic,
+                "brain": no_selfloop_neurons,
+                "in": init_list,
+            }
+        return dic
+
+
 def check_overlap(result: dict, x: int, y: int) -> int:
     return any([x, y] == indiv_data["position"][-1] for indiv_data in result.values())
 
@@ -226,96 +380,20 @@ def input_neuron(key: str, pos: str, result: dict):
         return key, 0
 
 
-# output
-# updated output neuron
-
-
 ## TODO check if 'out4' is properly executed
-def move(key: str, weight: float):
+def move(key: str, weight: float) -> tuple:
     factor_1 = np.random.choice(2, 1, p=[weight, 1 - weight])
     if "out0" in key:
-        return [0, int(factor_1)]
+        return (0, int(factor_1))
     elif "out1" in key:
-        return [0, int(-factor_1)]
+        return (0, int(-factor_1))
     elif "out2" in key:
-        return [int(+factor_1), 0]
+        return (int(+factor_1), 0)
     elif "out3" in key:
-        return [int(-factor_1), 0]
+        return (int(-factor_1), 0)
     elif "out4" in key:
         x, y = np.random.choice(2, 2)
-        return [x, y]
-
-
-class Neuron:
-    def __init__(
-        self,
-        hex_id,
-        input_id,
-        input_type,
-        weight,
-        output_id,
-        output_type,
-        differ_neuron,
-    ):
-        self.hex_id = hex_id
-        self.input_id = input_id
-        self.input_type = input_type
-        self.weight = weight
-        self.output_id = output_id
-        self.output_type = output_type
-        self.differ_neuron = differ_neuron
-
-
-class brain_to_action:
-
-    pass
-
-
-# brain generator
-
-
-class CalculateWeights:
-
-    def sum_duplicated_neurons(brain: list) -> dict:
-        """
-        Sum duplicated neurons and return a dictionary of grouped neurons.
-
-        Args:
-            res (list): List of tuples representing neurons.
-
-        Returns:
-            dict: Dictionary containing grouped neurons.
-        """
-        brain_to_dict = {}
-        for item in brain:
-            (
-                hexval,
-                input_id,
-                input_type,
-                weight,
-                output_id,
-                output_type,
-                differ_neuron,
-            ) = item
-            total = brain_to_dict.get(differ_neuron, 0) + weight
-            n_output = f"{output_type}{output_id}"
-            n_input = f"{input_type}{input_id}"
-            brain_to_dict[differ_neuron] = [n_input, n_output, total]
-        return brain_to_dict
-
-    def remove_self_loop(brain_to_dict: dict) -> dict:
-        """
-        Remove randomly picked self-looped edges, e.g., Amid->Bmid or Bmid->Amid.
-        """
-        for nr in brain_to_dict:
-            keys = list(brain_to_dict[nr].keys())  # Extract keys once
-            for key_1 in keys:
-                for key_2 in keys:
-                    if key_1 != key_2 and sorted(key_1) == sorted(key_2):
-                        rand_int = random.randint(0, 1)
-                        del brain_to_dict[nr][keys[rand_int]]
-
-        return brain_to_dict
+        return (x, y)
 
 
 def generate_brain_output_dictionary(edges):
@@ -397,44 +475,6 @@ def sum_weights(dic, input_list):
                     )
 
             dic[key] = NormalizeData(np.tanh(sum(dic[key].values())))
-
-
-def calculate_individual_output_weights(individuals):
-    dic = {}
-    ## sum duplicates
-    individuals_sum_dup = sum_duplicated_neurons(individuals)
-    individuals_sum_dup_no_self_loop = remove_self_loop(individuals_sum_dup)
-
-    for individual in individuals_sum_dup_no_self_loop:
-
-        ## preprocessing
-        edges = individuals_sum_dup_no_self_loop[individual]
-        edges = [tuple(edges[i]) for i in edges]
-        remove_mid_with_no_predecessor(edges)
-
-        init_list = list(set([i[0] for i in edges if "in" in i[0]]))
-
-        mid_dic = {}
-
-        for item in edges:
-            if item[1] in mid_dic:
-                mid_dic[item[1]].update({item[0]: item[2]})
-            else:
-                mid_dic[item[1]] = {item[0]: item[2]}
-
-        if mid_dic:
-            sum_weights(mid_dic, init_list)
-            remove_mid_from_dict(mid_dic)
-
-            dic[individual] = {
-                "out": {},
-                "brain": {},
-                "in": {},
-                "out": mid_dic,
-                "brain": individuals_sum_dup_no_self_loop[individual],
-                "in": init_list,
-            }
-    return dic
 
 
 def normalize_position_if_outside_world(position, max_border):
