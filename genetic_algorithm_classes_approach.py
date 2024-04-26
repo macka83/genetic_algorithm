@@ -209,6 +209,9 @@ class CalculateWeights:
     def __init__(self, brain: list):
         self.brain = brain
 
+    def normalize_data(self, data: float) -> float:
+        return round((data + 1) / 2, 3)
+
     def sum_duplicated_neurons(self) -> dict:
         cumulative_sum_dict = {}
 
@@ -260,25 +263,22 @@ class CalculateWeights:
                 k = 0
                 for mid_key in mid_to_update:
                     if isinstance(dic[mid_key], float):
-                        dic[key][mid_key] = NormalizeData(
+                        dic[key][mid_key] = self.normalize_data(
                             np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
                         )
                         k += 1
                 if k == len(mid_to_update):
                     dic[key] = np.tanh(sum(dic[key].values()))
-                    sum_weights(dic, input_list)
+                    self.sum_weights(dic, input_list)
 
             elif "out" in key and isinstance(dic[key], dict):
                 for mid_key in dic[key]:
                     if "mid" in mid_key and isinstance(dic[mid_key], float):
-                        dic[key][mid_key] = normalize_data(
+                        dic[key][mid_key] = self.normalize_data(
                             np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
                         )
 
                 dic[key] = self.normalize_data(np.tanh(sum(dic[key].values())))
-
-    def normalize_data(self, data: float) -> float:
-        return round((data + 1) / 2, 3)
 
     def remove_mid_from_dict(self, dic: dict) -> None:
         mid_list = [i for i in dic if "mid" in i]
@@ -291,18 +291,14 @@ class CalculateWeights:
         for i_nr, i in enumerate(edges):
             if "mid" in i[0] and i[0] not in set_neurons:
                 del edges[i_nr]
-                remove_mid_with_no_predecessor(edges)
+                self.remove_mid_with_no_predecessor(edges)
 
     def calculate_individual_output_weights(self) -> dict:
         dic = {}
-        ## sum duplicates
+
         unique_neurons = self.sum_duplicated_neurons()
         no_selfloop_neurons = self.remove_self_loop(unique_neurons)
-        # print("individuals_sum_dup_no_self_loop", no_selfloop_neurons)
-        # for individual in individuals_sum_dup_no_self_loop:
 
-        #     ## preprocessing
-        #     edges = individuals_sum_dup_no_self_loop[individual]
         edges = [tuple(no_selfloop_neurons[i]) for i in no_selfloop_neurons]
         self.remove_mid_with_no_predecessor(edges)
 
