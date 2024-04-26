@@ -323,6 +323,190 @@ class CalculateWeights:
             }
         return dic
 
+class PopulationMovement(CalculateWeights):
+
+    def __init__(self, world_size, population):
+        self.world_size = world_size
+        self.population = population
+
+    def steps_in_generation(self) -> dict:
+        """
+        Simulates steps in the generation process.
+
+        Returns:
+            dict: Updated population data after simulation.
+        """
+        n = 0
+        pbar = tqdm(total=self.world_size, initial=n)
+
+        while self.world_size > n:
+            pbar.update(1)
+
+            for indiv_nr in self.population:
+                last_x_position, last_y_position = (
+                    self.population[indiv_nr]["position"][-1][0],
+                    self.population[indiv_nr]["position"][-1][1],
+                )
+                if n < 1:
+                    self.calculate_position(
+                        self, indiv_nr, last_x_position, last_y_position
+                    )
+                elif n >= 1:
+                    self.apply_input(self, indiv_nr)
+                    self.calculate_position(
+                        self, indiv_nr, last_x_position, last_y_position
+                    )
+
+            last_pos_list = {
+                obj: self.population[obj]["position"][-1] for obj in self.population
+            }
+            self.prevent_overlap_movement(self, last_pos_list)
+            n += 1
+
+        pbar.close()
+        return self.brain
+
+    def calculate_position(
+        self, indiv_nr: int, last_x_position: int, last_y_position: int
+    ) -> None:
+
+        out_weight = self.population[indiv_nr]["out"]
+        position_list = (self.move(out, out_weight[out]) for out in out_weight)
+
+        if position_list:
+            position_list = list(map(sum, zip(*position_list)))
+            position_list = self.make_smaller(position_list)
+            position_list = list(map(sum, zip(*[[x, y]] + [position_list])))
+
+            position_list[0] = self.normalize_position_if_outside_world(
+                position_list[0], world_size
+            )
+            position_list[1] = self.normalize_position_if_outside_world(
+                position_list[1], world_size
+            )
+
+            result[indiv]["position"].append(position_list)
+
+    def move(self, key: str, weight: float) -> tuple:
+        factor_1 = np.random.choice(2, 1, p=[weight, 1 - weight])
+        if "out0" in key:
+            return (0, int(factor_1))
+        elif "out1" in key:
+            return (0, int(-factor_1))
+        elif "out2" in key:
+            return (int(+factor_1), 0)
+        elif "out3" in key:
+            return (int(-factor_1), 0)
+        elif "out4" in key:
+            x, y = np.random.choice(2, 2)
+            return (x, y)
+
+    def make_smaller(self, position_list:list) -> list:
+        """Convert -2 to -1 and 2 to 1."""
+        return [1 if i >= 2 else -1 if i <= -2 else i for i in position_list]
+
+    def normalize_position_if_outside_world(self, position: list) -> list:
+        """limit position to world border"""
+        if position < 0:
+            position = 0
+        elif position > self.world_size:
+            position = self.world_size
+
+        return position
+
+    def apply_input(self, indiv_nr: int) -> None:
+        """apply input regarding position of other individuals"""
+
+        pos = self.brain[indiv_nr]["position"]
+        in_keys = self.brain[indiv_nr]["in"]
+
+        self.brain = self.sum_input_weights(self.brain, indiv_nr, in_keys, pos)
+
+        edges = self.brain[indiv_nr]["brain"]
+        edges = [tuple(edges[i]) for i in edges]
+        self.remove_mid_with_no_predecessor(edges)
+
+        mid_dic = {}
+        for item in edges:
+            if item[1] in mid_dic:
+                mid_dic[item[1]].update({item[0]: item[2]})
+            else:
+                mid_dic[item[1]] = {item[0]: item[2]}
+
+        self.sum_weights(self, mid_dic, in_keys)
+        self.remove_mid_from_dict(self, mid_dic)
+
+        result[indiv_nr]["brain_after_pruning"] = edges
+        result[indiv_nr]["out"] = mid_dic
+
+    def prevent_overlap_movement(self, last_pos_dict: dict, result: dict) -> None:
+        """check if last position of each individual ovrlap with another. If yes then last posotion is switched to last but one.
+        last_pos_dict - dictionary of individuals keys and last position
+        result- total info about all individuals"""
+        list_of_resuls = []
+        for key_1, val_1 in last_pos_dict.items():
+            last_pos_list_copy = copy.copy(last_pos_dict)
+            del last_pos_list_copy[key_1]
+
+            for key_2, val_2 in last_pos_list_copy.items():
+                if val_1 == val_2:
+                    pos1_minus, pos2_minus = (
+                        result[key_1]["position"],
+                        result[key_2]["position"],
+                    )
+
+                    if pos2_minus[-1] != pos2_minus[-2]:
+                        pos2_minus[-1] = pos2_minus[-2]
+                        last_pos_dict[key_2] = pos2_minus[-2]
+                        self.prevent_overlap_movement(last_pos_dict, result)
+                        list_of_resuls.append(2)
+                    elif (
+                        pos2_minus[-1] == pos2_minus[-2]
+                        and pos1_minus[-1] != pos1_minus[-2]
+                    ):
+                        pos1_minus[-1] = pos1_minus[-2]
+                        last_pos_dict[key_1] = pos1_minus[-2]
+                        self.prevent_overlap_movement(last_pos_dict, result)
+                        list_of_resuls.append(1)
+                    else:
+                        list_of_resuls.append([[key_1, key_2]])
+
+    def sum_weights(self, dic: dict, input_list: list) -> None:
+        """input: dic - dictionary of 'mid' and 'out' neurons with predecessors
+         ex.{0: {'out1': {'mid0': -2.8534106516099498, 'mid1': -0.6730352510300626},
+                 'mid1': {'in2': -1.9940790477643828, 'mid0': -3.1373721959407903,'mid1': -1.880543262627804},
+                 'out0': {'in2': 0.16151381046848773},
+                 'mid0': {'in1': 2.8191057530901875}},
+                 0 = nr of individual,
+        filter_list - list of inputs ex. ['in0', 'in2', 'in1']"""
+        for key in dic:
+            if "mid" in key and isinstance(dic[key], dict):
+                mid_to_update = set(dic[key]).difference(set(input_list + [key]))
+                k = 0
+                for mid_key in mid_to_update:
+                    if isinstance(dic[mid_key], float):
+                        dic[key][mid_key] = NormalizeData(
+                            np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+                        )
+                        k += 1
+                if k == len(mid_to_update):
+                    dic[key] = np.tanh(sum(dic[key].values()))
+                    self.sum_weights(dic, input_list)
+
+            elif "out" in key and isinstance(dic[key], dict):
+                for mid_key in dic[key]:
+                    if "mid" in mid_key and isinstance(dic[mid_key], float):
+                        dic[key][mid_key] = normalize_data(
+                            np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
+                        )
+
+                dic[key] = self.normalize_data(np.tanh(sum(dic[key].values())))
+
+    def remove_mid_from_dict(self, dic: dict) -> None:
+        mid_list = [i for i in dic if "mid" in i]
+        for mid in mid_list:
+            dic.pop(mid)
+
 
 def check_overlap(result: dict, x: int, y: int) -> int:
     return any([x, y] == indiv_data["position"][-1] for indiv_data in result.values())
