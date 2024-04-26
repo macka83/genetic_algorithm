@@ -201,38 +201,6 @@ class Population:
         self.assign_position(pos)
         self.remove_outputless_brains()        
 
-
-
-
-# output
-# updated output neuron
-
-
-class Neuron:
-    def __init__(
-        self,
-        hex_id,
-        input_id,
-        input_type,
-        weight,
-        output_id,
-        output_type,
-        differ_neuron,
-    ):
-        self.hex_id = hex_id
-        self.input_id = input_id
-        self.input_type = input_type
-        self.weight = weight
-        self.output_id = output_id
-        self.output_type = output_type
-        self.differ_neuron = differ_neuron
-
-
-class brain_to_action:
-
-    pass
-
-
 # brain generator
 
 
