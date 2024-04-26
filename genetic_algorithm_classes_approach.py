@@ -147,11 +147,12 @@ class BrainInitiation:
 
 
 class Population:
-    def __init__(self, world_size, nr_individuals):
+    def __init__(self, world_size: int, nr_individuals: int, brain: dict):
         self.world_size = world_size
         self.nr_individuals = nr_individuals
+        self.brain = brain
 
-    def generate_random_coords(self) -> any:
+    def generate_random_coords(self)->any:
         """
         Generates random coordinates for individuals within the specified world size.
 
@@ -166,22 +167,41 @@ class Population:
         pos = coord_full_list[ind]
         return pos
 
-    def assign_position_and_remove_outputless_brains(self, result: dict, pos: list):
+    def assign_position(self, pos: list) -> None:
         """
-        Assigns positions to individuals and removes those with no output.
+        Assigns positions to individuals
 
         Args:
-            result (dict): A dictionary containing individual information.
+            brain (dict): A dictionary containing individual information.
             pos (list): List of positions for individuals.
 
         Returns:
-            None: The function modifies the 'result' dictionary in-place.
+            None: The function modifies the 'brain' dictionary in-place.
         """
-        indiv_to_del = (indiv for indiv in result if not result[indiv]["out"])
+        
+        for indiv in self.brain:
+            self.brain[indiv]["position"] = [list(pos[indiv])]
+
+    def remove_outputless_brains(self) -> None:
+        """
+        removes outputless brain.
+
+        Args:
+            brain (dict): A dictionary containing individual information.
+
+        Returns:
+            None: The function modifies the 'brain' dictionary in-place.
+        """
+        indiv_to_del = (indiv for indiv in self.brain if not self.brain[indiv]["out"])
         for key in indiv_to_del:
-            del result[key]
-        for indiv in result:
-            result[indiv]["position"] = [list(pos[indiv])]
+            del self.brain[key]
+
+    def clear_malfunction_brain_and_assign_position(self):
+        pos = self.generate_random_coords()
+        self.assign_position(pos)
+        self.remove_outputless_brains()        
+
+
 
 
 # output
