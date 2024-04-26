@@ -24,11 +24,7 @@ from tqdm import tqdm
 #         else:
 #             input = 0
 #         return input
-class Individual:
-    def __init__(self, brain, x, y):
-        self.brain = brain
-        self.x = x
-        self.y = y
+
 
 
 class BrainInitiation:
