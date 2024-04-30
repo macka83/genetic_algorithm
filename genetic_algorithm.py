@@ -56,23 +56,10 @@ def input_neuron(key, pos, result):
                     
     else:
         return key, 0
+
 # output
 # updated output neuron
 
-## TODO check if 'out4' is properly executed 
-def move(key, weight):
-    factor_1 = np.random.choice(2, 1, p=[weight, 1-weight])
-    if 'out0' in key:
-        return [0, int(factor_1)]
-    elif 'out1' in key:
-        return [0, int(-factor_1)]
-    elif 'out2' in key:
-        return [int(+factor_1), 0]
-    elif 'out3' in key:
-        return [int(-factor_1), 0]
-    elif 'out4' in key:
-        x,y = np.random.choice(2, 2)
-        return [x,y]
 
 # decode hexadecimal
 
@@ -264,6 +251,7 @@ def sum_weights(dic, input_list):
             for mid_key in mid_to_update:
                 if isinstance(dic[mid_key], float):
                     dic[key][mid_key] = NormalizeData(np.tanh(sum([dic[key][mid_key], dic[mid_key]])))
+
                     k+=1
             if k == len(mid_to_update):
                 dic[key] = np.tanh(sum(dic[key].values()))
@@ -279,8 +267,7 @@ def sum_weights(dic, input_list):
 def calculate_individual_output_weights(individuals):
     dic = {}
     ## sum duplicates
-    individuals_sum_dup = sum_duplicated_neurons(individuals)
-    individuals_sum_dup_no_self_loop = remove_self_loop(individuals_sum_dup)
+    individuals_sum_dup_no_self_loop = remove_self_loop(sum_duplicated_neurons(individuals))
     
     for individual in individuals_sum_dup_no_self_loop:
 
@@ -332,104 +319,13 @@ def make_smaller_(l):
         elif i == 2:
             l[i_nr] = 1
     return l
-    
-## from 'steps_in_generation'  
-def sum_input_weights(result, nr_of_individual, in_keys, pos):
-    '''sum calculated input based on environment with neurons containing input
-    result- list of creatures
-    nr_of_individual- number individual
-    in_keys- list of inputs id
-    pos- list of position of individual'''
-    result_copy = copy.copy(result)
-    del result_copy[nr_of_individual]
-    
-    for key in in_keys:
-        in_weight = input_neuron(key, pos, result_copy)
-        for neuron in result[nr_of_individual]['brain']:
-            # print(result[nr_of_individual]['position'])
-            # print(in_weight)
-            if in_weight[0] == result[nr_of_individual]['brain'][neuron][0]:
-                result[nr_of_individual]['brain'][neuron][2] += in_weight[1]
-                
-    return result 
   
-## from 'steps_in_generation'  
-def apply_input(result, nr_of_individual):
-    '''apply input regarding position of other individuals'''
-
-    pos = result[nr_of_individual]['position']
-    in_keys = result[nr_of_individual]['in']
-
-    result = sum_input_weights(result, nr_of_individual, in_keys, pos)
-
-    edges = result[nr_of_individual]['brain']
-    edges = [tuple(edges[i]) for i in edges]
-    remove_mid_with_no_predecessor(edges)
-
-    mid_dic = {}
-    for item in edges:
-        if item[1] in mid_dic:
-            mid_dic[item[1]].update({item[0]: item[2]})
-        else:
-            mid_dic[item[1]] = {item[0]: item[2]}
-    
-    sum_weights(mid_dic, in_keys)
-
-
-    remove_mid_from_dict(mid_dic)
-    
-    result[nr_of_individual]['brain_after_pruning'] = edges
-    result[nr_of_individual]['out'] = mid_dic
-  
-## from 'steps_in_generation'   
-def prevent_overlap_movement(last_pos_list, result):
-    '''check if last position of each individual ovrlap with another. If yes then last posotion is switched to last but one. 
-    last_pos_list - dictionary of individuals kesy and last position
-    result- total info about all individuals'''
-    list_of_resuls = []
-    for key_1, val_1 in last_pos_list.items():
-        last_pos_list_copy = copy.copy(last_pos_list)
-        del last_pos_list_copy[key_1]
-        list_of_keys = []
-        for key_2, val_2 in last_pos_list_copy.items():
-            if val_1 == val_2:
-                pos2_minus = result[key_2]['position']
-                pos1_minus = result[key_1]['position']
-                
-                if pos2_minus[-1] != pos2_minus[-2]:
-                    pos2_minus[-1] = pos2_minus[-2]
-                    last_pos_list[key_2] = pos2_minus[-2]
-                    prevent_overlap_movement(last_pos_list, result)
-                    list_of_resuls.append(2)
-                elif pos2_minus[-1]== pos2_minus[-2] and pos1_minus[-1] != pos1_minus[-2]:
-                    pos1_minus[-1] = pos1_minus[-2]
-                    last_pos_list[key_1] = pos1_minus[-2]
-                    prevent_overlap_movement(last_pos_list, result)
-                    list_of_resuls.append(1)
-                else:
-                    list_of_resuls.append([[key_1, key_2]])
- 
-## from 'steps_in_generation' 
-def calculate_position(result, indiv, x, y, world_size_x, world_size_y):
-    out_weight = result[indiv]['out']
-    position_list = (move(out, out_weight[out]) for out in out_weight)
-
-    if position_list:
-        position_list = list(map(sum, zip(*position_list)))
-        position_list = make_smaller_(position_list)
-        position_list = list(map(sum, zip(*[[x, y]] + [position_list])))
-
-        position_list[0] = normalize_position_if_outside_world(position_list[0], world_size_x)
-        position_list[1] = normalize_position_if_outside_world(position_list[1], world_size_y)
-
-        result[indiv]['position'].append(position_list)
-        
 ## mutation 
 
 def genome_mutation(genome):
     for gene_nr, gene in enumerate(genome):
         binary_gene = hexval_to_bin(gene)
-        binary_mutated = mutation(binary_gene, weight=0.09)
+        binary_mutated = mutation(binary_gene, weight=0.00001)
         if binary_mutated != binary_gene:
             genome[gene_nr] = hex(int(binary_mutated, 2))[2:]
 
@@ -485,41 +381,14 @@ def initial_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, 
     return result
 
 
-def steps_in_generation(world_size, result, world_size_x, world_size_y):
-    n = 0
-    pbar = tqdm(total=world_size, initial=n)
-
-    while world_size>n:
-        # print(n)
-        # pos_list = [tuple(result[obj]['position'][-1]) for obj in result]
-        # res = list(set([ele for ele in pos_list if pos_list.count(ele) > 1]))
-        # print('res')
-        # print(res)
-        # print()
-        pbar.update(1)
-        
-        for indiv in result:
-            x, y = result[indiv]['position'][-1][0], result[indiv]['position'][-1][1]
-            if n<1:
-                calculate_position(result, indiv, x, y, world_size_x, world_size_y)    
-            elif n >= 1:
-                apply_input(result, indiv)
-                calculate_position(result, indiv, x, y, world_size_x, world_size_y)
-                
-        last_pos_list = {obj:result[obj]['position'][-1] for obj in result}
-        prevent_overlap_movement(last_pos_list, result)
-        n += 1
-    pbar.close()
-    return result
-    
 def select_individuals_from_safezone(world_size, result):
     '''select individuals from safe zone and renumerate'''
-    safe_zone = int(world_size * 0.6)
+    safe_zone = int(world_size * 0.2)
     n=0
     survivors = {}
     for key in result:
         x = result[key]['position'][-1][0]
-        if x > safe_zone:
+        if x < safe_zone:
             survivors[n] = {'genome':[]}
             survivors[n]['genome'] = result[key]['genome']
             n+=1
@@ -527,21 +396,25 @@ def select_individuals_from_safezone(world_size, result):
     
 def asexual_reproduction_and_mutation(world_size, result, nr_individuals):
     survivors, n = select_individuals_from_safezone(world_size, result)
-
-    ## reproduct survivors        
-    new_indiv_len = nr_individuals - list(survivors.keys())[-1]
-    new_indiv_nr = np.random.choice(list(survivors.keys()), new_indiv_len-1)
-
-    for key in new_indiv_nr:
-        survivors[n] = {'genome':[]}
-        survivors[n]['genome'] = survivors[key]['genome'] 
-        n+=1
-        
-    ## mutate population
-    for key in survivors:
-        genome_mutation(survivors[key]['genome'])
     
-    return survivors
+    survivor_factor = len(survivors)/len(result)
+    if survivor_factor <= 0.8:
+        ## reproduct survivors        
+        new_indiv_len = nr_individuals - list(survivors.keys())[-1]
+        new_indiv_nr = np.random.choice(list(survivors.keys()), new_indiv_len-1)
+
+        for key in new_indiv_nr:
+            survivors[n] = {'genome':[]}
+            survivors[n]['genome'] = survivors[key]['genome'] 
+            n+=1
+            
+        ## mutate population
+        for key in survivors:
+            genome_mutation(survivors[key]['genome'])
+        
+        return survivors
+    else:
+        print('STOP')
  
 def next_generation(survivors, nr_of_input, nr_of_actions, nr_of_inner, world_size, nr_individuals):
     dic = {}

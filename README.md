@@ -11,7 +11,9 @@ conda 4.13.0
 
 Presented framework is my interpretation of biosim4 prepared by David R Miller and most of assumption come from his work. Great explanation is provided by D.R. Miller's video https://www.youtube.com/watch?v=N3tRFayqVtk. 
 
-Here I'll only highlight changes, obstacles and things to do
+run execute_genetic_algorithm.ipynb to check the result
+
+Here I'll highlight changes, obstacles and things to do
 
 1) Creating initial population is almost the same as original except input and output neurons number to simplify calculations.
     * input neurons sensitive to  
@@ -26,11 +28,15 @@ Here I'll only highlight changes, obstacles and things to do
 2) in this experiment only asexual reproduction and punctual mutation are implemented
 
 TODO:
-1) improve main loop performance and increase ability to process larger population
-2) small population which might give biased result in compariosn to larger population
-3) add sexual reproducion
-4) check if mutation works fine
+1) ~~improve main loop performance and increase ability to process larger population~~ - increase speed by replacing recursive loop prevent_overlap_movement() from steps_in_generation() with for loop
+2) add config file
+3) split code into smaller chunks
+4) add sexual reproducion
+5) early stopper
+6) summary statistic
+7) add images to readme
 
-
-
-
+CHECK
+1) if small population give biased result in comparison to larger population
+2) if mutation works fine
+3) why initial population move mostly north-east
