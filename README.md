@@ -9,6 +9,9 @@ requirements
 Python 3.9.12  
 conda 4.13.0  
 
+Changes:
+applied classes and black library formatting
+
 Presented framework is my interpretation of biosim4 prepared by David R Miller and most of assumption come from his work. Great explanation is provided by D.R. Miller's video https://www.youtube.com/watch?v=N3tRFayqVtk. 
 
 Here I'll only highlight changes, obstacles and things to do
