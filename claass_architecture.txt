@@ -1,0 +1,23 @@
+class individual
+
+position
+
+neuron
+brain
+
+mutation
+
+
+class population
+
+distribution
+movement
+
+
+flow:
+initialize population
+
+change generation
+movement
+mutation
+

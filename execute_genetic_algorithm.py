@@ -1,45 +1,89 @@
+# %%
 from genetic_algorithm import *
 from numpy.random import default_rng
+import pickle
 
-# ## hexadecimal generator
+import binascii
 
-nr_of_input = 3
-nr_of_actions = 3
+import matplotlib.pyplot as plt
+import math
+from matplotlib.animation import FuncAnimation
+
+# %matplotlib notebook
+
+import copy
+from collections import Counter
+import pandas as pd
+
+# %%
+## hexadecimal generator
+
+nr_of_input = 2
+nr_of_actions = 5
 nr_of_inner = 3
-nr_of_genes = 16
-nr_individuals = 4
-
-individuals = generate_initial_genomes_for_population(nr_individuals, nr_of_genes, nr_of_input, nr_of_actions, nr_of_inner)
+nr_of_genes = 8
+nr_individuals = 10
 
 ## world size
-world_size_x = 128
-world_size_y = 128
+world_size = 30
+world_size_x = world_size
+world_size_y = world_size
 
-rng = default_rng()
-x = rng.choice(world_size_x, size=nr_individuals, replace=False)
-y = rng.choice(world_size_y, size=nr_individuals, replace=False)
+# %% [markdown]
+# ## generations
 
-# ## initial brain and position generator
+# %%
+result = {}
+for gen_nr in range(10):
+    print(gen_nr)
+    if gen_nr == 0:
+        result = initial_population(
+            nr_individuals,
+            nr_of_genes,
+            nr_of_input,
+            nr_of_actions,
+            nr_of_inner,
+            world_size,
+        )
+        result = steps_in_generation(world_size * 2, result, world_size_x, world_size_y)
+    #         print(result[0])
+    else:
 
-result = calculate_individual_output_weights(individuals)
-print(result)
+        result = asexual_reproduction_and_mutation(world_size, result, nr_individuals)
 
-a = [(3, 0),(4,1),(5,2)]
+        result = next_generation(
+            result, nr_of_input, nr_of_actions, nr_of_inner, world_size, nr_individuals
+        )
+        result = steps_in_generation(world_size * 2, result, world_size_x, world_size_y)
 
-def slope_intercept(x1,y1,x2,y2):
-    a = (y2 - y1) / (x2 - x1)
-    b = y1 - a * x1     
-    return a,b
+    result.update(result)
 
-# print(slope_intercept(3,0,2,1))
+    dic_color = {}
+    for indiv in result:
+        rgb_colors = list(map(hex_to_rgb, result[indiv]["genome"]))
+        color = tuple(pd.DataFrame(rgb_colors).median())
+        dic_color[indiv] = color
 
-if a[-2][0] == a[-1][0]:
-    x = a[-1][0]
-elif a[-2][0] > a[-1][0]:
-    x = a[-2][0] + 1
-elif a[-2][0] < a[-1][0]:
-    x = a[-2][0] - 1
-# print(x)
+    coords = generate_dictionary_of_coords(result, world_size * 2, dic_color)
 
-a[-2][0]
+    def update(i):
+        ax.clear()
+        ax.set_facecolor(plt.cm.Blues(0.2))
 
+        ax.set_xlim([0, world_size_x])
+        ax.set_ylim([0, world_size_y])
+        ax.set_title("moving")
+        ax.scatter(
+            x=coords[i]["x"], y=coords[i]["y"], c=coords[i]["color"], s=20, marker="o"
+        )
+        [spine.set_visible(False) for spine in ax.spines.values()]
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+    myAnimation = FuncAnimation(
+        fig=fig, func=update, frames=len(coords), interval=10, repeat=False
+    )
+    myAnimation.save(f"./output/generation-{gen_nr}.gif", writer="imagemagick", fps=10)
+    # create a binary pickle file
+    f = open(f"./output/generation-{gen_nr}.pkl", "wb")
+    pickle.dump(dict, f)
+    f.close()
