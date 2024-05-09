@@ -11,9 +11,9 @@ conda 4.13.0
 
 Presented framework is my interpretation of biosim4 prepared by David R Miller and most of assumption come from his work. Great explanation is provided by D.R. Miller's video https://www.youtube.com/watch?v=N3tRFayqVtk. 
 
-branch description:
+branch description: <br>
   v_0 - working version before refactoring <br>
-  dev_0_semi_finished - 1st approach to refactor
+  dev_0_semi_finished - 1st approach to refactor <br>
   dev_1_classes_approach - 2nd approach to refactor. Applied black formatting and classes
 
 
