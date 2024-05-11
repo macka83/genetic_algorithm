@@ -11,21 +11,6 @@ import numpy as np
 import copy
 from tqdm import tqdm
 
-# ### funkcje neuronów
-
-# input
-# # Bliska przeszkoda
-
-
-# def check_overlap(result: dict, x: int, y: int):
-#     for indiv in result:
-#         if [x, y] == result[indiv]["position"][-1]:
-#             input = 1
-#         else:
-#             input = 0
-#         return input
-
-
 
 class BrainInitiation:
     def __init__(
@@ -152,7 +137,7 @@ class Population:
         self.nr_individuals = nr_individuals
         self.brain = brain
 
-    def generate_random_coords(self)->any:
+    def generate_random_coords(self) -> any:
         """
         Generates random coordinates for individuals within the specified world size.
 
@@ -178,7 +163,7 @@ class Population:
         Returns:
             None: The function modifies the 'brain' dictionary in-place.
         """
-        
+
         for indiv in self.brain:
             self.brain[indiv]["position"] = [list(pos[indiv])]
 
@@ -199,9 +184,7 @@ class Population:
     def clear_malfunction_brain_and_assign_position(self):
         pos = self.generate_random_coords()
         self.assign_position(pos)
-        self.remove_outputless_brains()        
-
-# brain generator
+        self.remove_outputless_brains()
 
 
 class CalculateWeights:
@@ -323,6 +306,7 @@ class CalculateWeights:
             }
         return dic
 
+
 class PopulationMovement(CalculateWeights):
 
     def __init__(self, world_size, population):
@@ -401,7 +385,7 @@ class PopulationMovement(CalculateWeights):
             x, y = np.random.choice(2, 2)
             return (x, y)
 
-    def make_smaller(self, position_list:list) -> list:
+    def make_smaller(self, position_list: list) -> list:
         """Convert -2 to -1 and 2 to 1."""
         return [1 if i >= 2 else -1 if i <= -2 else i for i in position_list]
 
