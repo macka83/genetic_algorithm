@@ -350,26 +350,38 @@ class PopulationMovement(CalculateWeights):
         pbar.close()
         return self.brain
 
-    def calculate_position(
-        self, indiv_nr: int, last_x_position: int, last_y_position: int
-    ) -> None:
+    def calculate_position(self, indiv_nr: int, x: int, y: int) -> None:
+        """
+        Calculates the position for an individual based on its output weights.
 
+        Args:
+            indiv_nr (int): Individual number.
+            x (int): X-coordinate.
+            y (int): Y-coordinate.
+        """
         out_weight = self.population[indiv_nr]["out"]
-        position_list = (self.move(out, out_weight[out]) for out in out_weight)
+        position_list = [self.move(out, out_weight[out]) for out in out_weight]
 
         if position_list:
+            # Sum the coordinates of all positions
             position_list = list(map(sum, zip(*position_list)))
+
+            # Make the position smaller (if needed)
             position_list = self.make_smaller(position_list)
+
+            # Add the current (x, y) coordinates to the position list
             position_list = list(map(sum, zip(*[[x, y]] + [position_list])))
 
+            # Normalize the coordinates if they are outside the world boundaries
             position_list[0] = self.normalize_position_if_outside_world(
-                position_list[0], world_size
+                position_list[0], self.world_size
             )
             position_list[1] = self.normalize_position_if_outside_world(
-                position_list[1], world_size
+                position_list[1], self.world_size
             )
 
-            result[indiv]["position"].append(position_list)
+            # Append the calculated position to the result
+            result[indiv_nr]["position"].append(position_list)
 
     def move(self, key: str, weight: float) -> tuple:
         factor_1 = np.random.choice(2, 1, p=[weight, 1 - weight])
