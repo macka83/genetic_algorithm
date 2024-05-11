@@ -373,12 +373,10 @@ class PopulationMovement(CalculateWeights):
             position_list = list(map(sum, zip(*[[x, y]] + [position_list])))
 
             # Normalize the coordinates if they are outside the world boundaries
-            position_list[0] = self.normalize_position_if_outside_world(
-                position_list[0], self.world_size
-            )
-            position_list[1] = self.normalize_position_if_outside_world(
-                position_list[1], self.world_size
-            )
+            for coord in range(2):
+                position_list[coord] = self.normalize_position_if_outside_world(
+                    position_list[coord], self.world_size
+                )
 
             # Append the calculated position to the result
             result[indiv_nr]["position"].append(position_list)
