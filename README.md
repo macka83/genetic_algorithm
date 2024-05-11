@@ -6,11 +6,12 @@ https://github.com/davidrmiller/biosim4
 
 -------------------
 requirements  
-Python 3.9.12  
-conda 4.13.0  
+Python 3.11.7  
+conda 24.1.2  
 
 Changes:
-applied classes and black library formatting
+applied classes and black formatting
+some functions optimised with copilot
 
 Presented framework is my interpretation of biosim4 prepared by David R Miller and most of assumption come from his work. Great explanation is provided by D.R. Miller's video https://www.youtube.com/watch?v=N3tRFayqVtk. 
 
