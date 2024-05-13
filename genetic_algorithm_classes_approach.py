@@ -7,24 +7,20 @@
 from secrets import token_hex
 import random
 from itertools import combinations, product
-import numpy as np
 import copy
+import numpy as np
 from tqdm import tqdm
 
 
 class BrainInitiation:
+    """
+    Initialize the Brain class with specified parameters.
+    """
+
     def __init__(
         self, nr_of_genes: int, nr_of_input: int, nr_of_actions: int, nr_of_inner: int
     ):
-        """
-        Initialize the Brain class with specified parameters.
 
-        Args:
-            nr_of_genes (int): Number of genes.
-            nr_of_input (int): Number of input neurons.
-            nr_of_actions (int): Number of output actions.
-            nr_of_inner (int): Number of inner neurons.
-        """
         self.nr_of_genes = nr_of_genes
         self.nr_of_input = nr_of_input
         self.nr_of_actions = nr_of_actions
@@ -327,19 +323,15 @@ class PopulationMovement(CalculateWeights):
             pbar.update(1)
 
             for indiv_nr in self.population:
-                last_x_position, last_y_position = (
+                last_x, last_y = (
                     self.population[indiv_nr]["position"][-1][0],
                     self.population[indiv_nr]["position"][-1][1],
                 )
                 if n < 1:
-                    self.calculate_position(
-                        self, indiv_nr, last_x_position, last_y_position
-                    )
+                    self.calculate_position(self, indiv_nr, last_x, last_y)
                 elif n >= 1:
                     self.apply_input(self, indiv_nr)
-                    self.calculate_position(
-                        self, indiv_nr, last_x_position, last_y_position
-                    )
+                    self.calculate_position(self, indiv_nr, last_x, last_y)
 
             last_pos_list = {
                 obj: self.population[obj]["position"][-1] for obj in self.population
@@ -378,19 +370,22 @@ class PopulationMovement(CalculateWeights):
                     position_list[coord], self.world_size
                 )
 
-            # Append the calculated position to the result
-            result[indiv_nr]["position"].append(position_list)
+            # Append the calculated position to the population
+            self.population[indiv_nr]["position"].append(position_list)
 
     def move(self, key: str, weight: float) -> tuple:
-        factor_1 = np.random.choice(2, 1, p=[weight, 1 - weight])
+        """
+        generate direction
+        """
+        coord = np.random.choice(2, 1, p=[weight, 1 - weight])
         if "out0" in key:
-            return (0, int(factor_1))
+            return (0, int(coord))
         elif "out1" in key:
-            return (0, int(-factor_1))
+            return (0, int(-coord))
         elif "out2" in key:
-            return (int(+factor_1), 0)
+            return (int(+coord), 0)
         elif "out3" in key:
-            return (int(-factor_1), 0)
+            return (int(-coord), 0)
         elif "out4" in key:
             x, y = np.random.choice(2, 2)
             return (x, y)
@@ -405,8 +400,24 @@ class PopulationMovement(CalculateWeights):
             position = 0
         elif position > self.world_size:
             position = self.world_size
-
         return position
+
+    def sum_input_weights(
+        self, nr_of_individual: int, in_keys: list, pos: list
+    ) -> None:
+        """sum calculated input based on environment with neurons containing input
+        result- list of creatures
+        nr_of_individual- number individual
+        in_keys- list of inputs id
+        pos- list of position of individual"""
+        result_copy = copy.copy(self.brain)
+        del result_copy[nr_of_individual]
+
+        for key in in_keys:
+            in_weight = input_neuron(key, pos, result_copy)
+            for neuron in self.brain[nr_of_individual]["brain"]:
+                if in_weight[0] == self.brain[nr_of_individual]["brain"][neuron][0]:
+                    self.brain[nr_of_individual]["brain"][neuron][2] += in_weight[1]
 
     def apply_input(self, indiv_nr: int) -> None:
         """apply input regarding position of other individuals"""
@@ -414,7 +425,7 @@ class PopulationMovement(CalculateWeights):
         pos = self.brain[indiv_nr]["position"]
         in_keys = self.brain[indiv_nr]["in"]
 
-        self.brain = self.sum_input_weights(self.brain, indiv_nr, in_keys, pos)
+        self.sum_input_weights(self, indiv_nr, in_keys, pos)
 
         edges = self.brain[indiv_nr]["brain"]
         edges = [tuple(edges[i]) for i in edges]
@@ -538,22 +549,6 @@ def input_neuron(key: str, pos: str, result: dict):
         return key, 0
 
 
-## TODO check if 'out4' is properly executed
-def move(key: str, weight: float) -> tuple:
-    factor_1 = np.random.choice(2, 1, p=[weight, 1 - weight])
-    if "out0" in key:
-        return (0, int(factor_1))
-    elif "out1" in key:
-        return (0, int(-factor_1))
-    elif "out2" in key:
-        return (int(+factor_1), 0)
-    elif "out3" in key:
-        return (int(-factor_1), 0)
-    elif "out4" in key:
-        x, y = np.random.choice(2, 2)
-        return (x, y)
-
-
 def generate_brain_output_dictionary(edges):
     """generate list of outputs dictionary to store 'mid' and 'in' neurons"""
     brain_output_template = {}
@@ -651,24 +646,6 @@ def make_smaller(l):
 
 
 ## from 'steps_in_generation'
-def sum_input_weights(result, nr_of_individual, in_keys, pos):
-    """sum calculated input based on environment with neurons containing input
-    result- list of creatures
-    nr_of_individual- number individual
-    in_keys- list of inputs id
-    pos- list of position of individual"""
-    result_copy = copy.copy(result)
-    del result_copy[nr_of_individual]
-
-    for key in in_keys:
-        in_weight = input_neuron(key, pos, result_copy)
-        for neuron in result[nr_of_individual]["brain"]:
-            # print(result[nr_of_individual]['position'])
-            # print(in_weight)
-            if in_weight[0] == result[nr_of_individual]["brain"][neuron][0]:
-                result[nr_of_individual]["brain"][neuron][2] += in_weight[1]
-
-    return result
 
 
 ## from 'steps_in_generation'
