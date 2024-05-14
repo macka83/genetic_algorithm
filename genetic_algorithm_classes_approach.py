@@ -441,8 +441,8 @@ class PopulationMovement(CalculateWeights):
         self.sum_weights(self, mid_dic, in_keys)
         self.remove_mid_from_dict(self, mid_dic)
 
-        result[indiv_nr]["brain_after_pruning"] = edges
-        result[indiv_nr]["out"] = mid_dic
+        self.brain[indiv_nr]["brain_after_pruning"] = edges
+        self.brain[indiv_nr]["out"] = mid_dic
 
     def prevent_overlap_movement(self, last_pos_dict: dict, result: dict) -> None:
         """check if last position of each individual ovrlap with another. If yes then last posotion is switched to last but one.
