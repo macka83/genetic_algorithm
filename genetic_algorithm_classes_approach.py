@@ -127,65 +127,6 @@ class BrainInitiation:
         )
 
 
-class Population:
-    def __init__(self, world_size: int, nr_individuals: int, population: dict):
-        self.world_size = world_size
-        self.nr_individuals = nr_individuals
-        self.population = population
-
-    def generate_random_coords(self) -> any:
-        """
-        Generates random coordinates for individuals within the specified world size.
-
-        Args:
-            self.world_size (int): The size of the world (assumed to be square).
-
-        Returns:
-            np.ndarray: An array of randomly selected coordinates for individuals.
-        """
-        coord_full_list = np.array(list(product(range(self.world_size), repeat=2)))
-        ind = np.random.choice(len(coord_full_list), self.nr_individuals, replace=False)
-        pos = coord_full_list[ind]
-        return pos
-
-    def assign_position(self, pos: list) -> None:
-        """
-        Assigns positions to individuals
-
-        Args:
-            population (dict): A dictionary containing individual information.
-            pos (list): List of positions for individuals.
-
-        Returns:
-            None: The function modifies the 'population' dictionary in-place.
-        """
-
-        for indiv in self.population:
-            self.population[indiv]["position"] = [list(pos[indiv])]
-
-    def remove_outputless_brains(self) -> None:
-        """
-        removes outputless brain.
-
-        Args:
-            population (dict): A dictionary containing individual information.
-
-        Returns:
-            None: The function modifies the 'brain' dictionary in-place.
-        """
-        indiv_to_del = (
-            indiv for indiv in self.population if not self.population[indiv]["out"]
-        )
-        for key in indiv_to_del:
-            del self.population[key]
-
-    def clear_malfunction_brain_and_assign_position(self):
-        pos = self.generate_random_coords()
-        self.assign_position(pos)
-        self.remove_outputless_brains()
-        return self.population
-
-
 class CalculateWeights:
 
     def __init__(self, brain: list):
@@ -221,8 +162,8 @@ class CalculateWeights:
         """
         keys = list(brain_to_dict.keys())  # Extract keys once
         # print(keys)
-        key_combinat = combinations(keys, 2)
-        for key_pair in key_combinat:
+
+        for key_pair in combinations(keys, 2):
             if key_pair[0] != key_pair[1] and sorted(key_pair[0]) == sorted(
                 key_pair[1]
             ):
@@ -306,6 +247,71 @@ class CalculateWeights:
         return dic
 
 
+class Population:
+    """Initiate population"""
+
+    def __init__(self, world_size: int, nr_individuals: int, population: dict):
+        self.world_size = world_size
+        self.nr_individuals = nr_individuals
+        self.population = population
+
+    def generate_random_coords(self) -> any:
+        """
+        Generates random coordinates for individuals within the specified world size.
+
+        Args:
+            self.world_size (int): The size of the world (assumed to be square).
+
+        Returns:
+            np.ndarray: An array of randomly selected coordinates for individuals.
+        """
+        coord_full_list = np.array(list(product(range(self.world_size), repeat=2)))
+        coord_index = np.random.choice(
+            len(coord_full_list), self.nr_individuals, replace=False
+        )
+        selected_coords = coord_full_list[coord_index]
+        # print('selected_coords', selected_coords)
+        return selected_coords
+
+    def assign_position(self, pos: list) -> None:
+        """
+        Assigns positions to individuals
+
+        Args:
+            population (dict): A dictionary containing individual information.
+            pos (list): List of positions for individuals.
+
+        Returns:
+            None: The function modifies the 'population' dictionary in-place.
+        """
+        # print('self.population.keys', self.population.keys)
+        # print('len(self.population)', len(self.population))
+        for indiv in self.population:
+            self.population[indiv]["position"] = [list(pos[indiv])]
+
+    def remove_outputless_brains(self) -> None:
+        """
+        removes outputless brain.
+
+        Args:
+            population (dict): A dictionary containing individual information.
+
+        Returns:
+            None: The function modifies the 'brain' dictionary in-place.
+        """
+        indiv_to_del = (
+            indiv for indiv in self.population if not self.population[indiv]["out"]
+        )
+        for key in indiv_to_del:
+            del self.population[key]
+
+    def clear_malfunction_brain_and_assign_position(self):
+        pos = self.generate_random_coords()
+        self.assign_position(pos)
+        self.remove_outputless_brains()
+        return self.population
+
+
 class PopulationMovement(CalculateWeights):
 
     def __init__(self, world_size, population):
@@ -325,11 +331,9 @@ class PopulationMovement(CalculateWeights):
         while self.world_size > n:
             pbar.update(1)
 
-            for indiv_nr in self.population:
-                last_x, last_y = (
-                    self.population[indiv_nr]["position"][-1][0],
-                    self.population[indiv_nr]["position"][-1][1],
-                )
+            for indiv_nr, indiv_data in self.population.items():
+                last_x, last_y = indiv_data["position"][-1]
+
                 if n < 1:
                     self.calculate_position(indiv_nr, last_x, last_y)
                 elif n >= 1:
@@ -405,58 +409,57 @@ class PopulationMovement(CalculateWeights):
             position = self.world_size
         return position
 
-    def input_neuron(self, key: str, pos: str) -> tuple:
+    def check_overlap(self, result: dict, x: int, y: int) -> int:
+        return int(
+            any([x, y] == indiv_data["position"][-1] for indiv_data in result.values())
+        )
+
+    def input_neuron(self, key: str, pos: str, result: dict) -> tuple:
         """key - input name
         pos - list of individual position
         tot_position - all individual last position"""
         if pos[-2] != pos[-1]:
             x1, y1, x2, y2 = pos[-2][0], pos[-2][1], pos[-1][0], pos[-1][1]
-            dx = x2 - x1
-            dy = y2 - y1
+            dx, dy = x2 - x1, y2 - y1
             x3, y3 = x2 + dx, y2 + dy
 
             if "in0" in key:
                 # close obstacle
                 # return 0 or 1
-                return key, check_overlap(result, x3, y3)
+                # print("if_2  ", key, self.check_overlap(result, x3, y3))
+                return key, self.check_overlap(result, x3, y3)
             elif "in1" in key:
                 # distant obstacle (5 steps forward
                 # return between 0 and 1
                 for i in range(5):
-                    if dx != 0:
-                        dx += 1
-                    if dy != 0:
-                        dy += 1
-                    factor = check_overlap(result, x2 + dx, y2 + dy)
-                    if factor == 0:
+                    dx += 1 if dx != 0 else 0
+                    dy += 1 if dy != 0 else 0
+                    if self.check_overlap(result, x2 + dx, y2 + dy) == 0:
+                        # print("if_3  ", key, 0)
                         return key, 0
-                    else:
-                        return key, i / 5
-
+                # print("elif ", key, i / 5)
+                return key, i / 5
+            else:
+                print("no input neuron", key)
         else:
+            # print("else_1", key, 0)
             return key, 0
 
-    def sum_input_weights(
-        self, nr_of_individual: int, in_keys: list, pos: list
-    ) -> None:
+    def sum_input_weights(self, obj_ID: int, in_keys: list, pos: list) -> None:
         """sum calculated input based on environment with neurons containing input
         result- list of creatures
-        nr_of_individual- number individual
+        obj_ID- number individual
         in_keys- list of inputs id
         pos- list of position of individual"""
         result_copy = copy.copy(self.population)
-        del result_copy[nr_of_individual]
+        del result_copy[obj_ID]
 
         for key in in_keys:
             in_weight = self.input_neuron(key, pos, result_copy)
-            for neuron in self.population[nr_of_individual]["brain"]:
-                if (
-                    in_weight[0]
-                    == self.population[nr_of_individual]["brain"][neuron][0]
-                ):
-                    self.population[nr_of_individual]["brain"][neuron][2] += in_weight[
-                        1
-                    ]
+
+            for neuron in self.population[obj_ID]["brain"]:
+                if in_weight[0] == self.population[obj_ID]["brain"][neuron][0]:
+                    self.population[obj_ID]["brain"][neuron][2] += in_weight[1]
 
     def apply_input(self, indiv_nr: int) -> None:
         """apply input regarding position of other individuals"""
@@ -477,8 +480,8 @@ class PopulationMovement(CalculateWeights):
             else:
                 mid_dic[item[1]] = {item[0]: item[2]}
 
-        self.sum_weights(self, mid_dic, in_keys)
-        self.remove_mid_from_dict(self, mid_dic)
+        self.sum_weights(mid_dic, in_keys)
+        self.remove_mid_from_dict(mid_dic)
 
         self.population[indiv_nr]["brain_after_pruning"] = edges
         self.population[indiv_nr]["out"] = mid_dic
@@ -486,7 +489,7 @@ class PopulationMovement(CalculateWeights):
     def prevent_overlap_movement(self, last_pos_dict: dict) -> None:
         """check if last position of each individual ovrlap with another. If yes then last posotion is switched to last but one.
         last_pos_dict - dictionary of individuals keys and last position
-        result- total info about all individuals"""
+        """
         list_of_resuls = []
         for key_1, val_1 in last_pos_dict.items():
             last_pos_list_copy = copy.copy(last_pos_dict)
@@ -495,8 +498,8 @@ class PopulationMovement(CalculateWeights):
             for key_2, val_2 in last_pos_list_copy.items():
                 if val_1 == val_2:
                     pos1_minus, pos2_minus = (
-                        self.result[key_1]["position"],
-                        self.result[key_2]["position"],
+                        self.population[key_1]["position"],
+                        self.population[key_2]["position"],
                     )
 
                     if pos2_minus[-1] != pos2_minus[-2]:
@@ -529,7 +532,7 @@ class PopulationMovement(CalculateWeights):
                 k = 0
                 for mid_key in mid_to_update:
                     if isinstance(dic[mid_key], float):
-                        dic[key][mid_key] = NormalizeData(
+                        dic[key][mid_key] = self.normalize_data(
                             np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
                         )
                         k += 1
@@ -540,7 +543,7 @@ class PopulationMovement(CalculateWeights):
             elif "out" in key and isinstance(dic[key], dict):
                 for mid_key in dic[key]:
                     if "mid" in mid_key and isinstance(dic[mid_key], float):
-                        dic[key][mid_key] = normalize_data(
+                        dic[key][mid_key] = self.normalize_data(
                             np.tanh(sum([dic[key][mid_key], dic[mid_key]]))
                         )
 
@@ -550,10 +553,6 @@ class PopulationMovement(CalculateWeights):
         mid_list = [i for i in dic if "mid" in i]
         for mid in mid_list:
             dic.pop(mid)
-
-
-def check_overlap(result: dict, x: int, y: int) -> int:
-    return any([x, y] == indiv_data["position"][-1] for indiv_data in result.values())
 
 
 def generate_brain_output_dictionary(edges):
@@ -651,15 +650,15 @@ def make_smaller(l):
 
 
 ## from 'steps_in_generation'
-def apply_input(result, nr_of_individual):
+def apply_input(result, obj_ID):
     """apply input regarding position of other individuals"""
 
-    pos = result[nr_of_individual]["position"]
-    in_keys = result[nr_of_individual]["in"]
+    pos = result[obj_ID]["position"]
+    in_keys = result[obj_ID]["in"]
 
-    result = sum_input_weights(result, nr_of_individual, in_keys, pos)
+    result = sum_input_weights(result, obj_ID, in_keys, pos)
 
-    edges = result[nr_of_individual]["brain"]
+    edges = result[obj_ID]["brain"]
     edges = [tuple(edges[i]) for i in edges]
     remove_mid_with_no_predecessor(edges)
 
@@ -674,8 +673,8 @@ def apply_input(result, nr_of_individual):
 
     remove_mid_from_dict(mid_dic)
 
-    result[nr_of_individual]["brain_after_pruning"] = edges
-    result[nr_of_individual]["out"] = mid_dic
+    result[obj_ID]["brain_after_pruning"] = edges
+    result[obj_ID]["out"] = mid_dic
 
 
 ## from 'steps_in_generation'
